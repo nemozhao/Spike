@@ -1,0 +1,4 @@
+# Les ligne commençant par '#' sont des commentaires.
+# Ignorer tous les fichiers cacher liés a OS X (.DS_STORE)
+.DS_STORE
+target
