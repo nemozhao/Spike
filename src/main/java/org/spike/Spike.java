@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +21,12 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.spike.log.SpikeLoggerFormatter;
+import org.spike.model.Feed;
+import org.spike.model.FeedMessage;
 import org.spike.model.Page;
 import org.spike.model.Paginator;
 import org.spike.model.Post;
+import org.spike.model.RSSFeedWriter;
 import org.spike.model.Site;
 import org.spike.model.SpikeTools;
 import org.spike.model.XmlFeed;
@@ -202,10 +206,34 @@ public class Spike extends DirectoryWatcher {
 		});
 		// XmlFeed only once posts are sorted by Date descending
 		XmlFeed lXmlFeed = new XmlFeed("www.mikomatic.com");
+
+		// Build also xml feed
+		// Create the rss feed
+		String copyright = "Copyright hold by Mikomatic";
+		String title = "Mike's blog";
+		String description = "Blogging about software, movies, life, and every thing else in between";
+		String language = "fr";
+		String link = "http://www.mikomatic.com";
+		Date creationDate = new Date();
+		SimpleDateFormat date_format = new SimpleDateFormat(
+				"yyyy-MM-dd'T'HH:mm:ss");
+		String pubdate = date_format.format(creationDate);
+		Feed rssFeeder = new Feed(title, link, description, language,
+				copyright, pubdate);
+
 		int lSize = posts.size();
 		for (int i = 0; i < lSize; i++) {
 			Post post = posts.get(i);
-			lXmlFeed.addItem(post);
+
+			// Now add one example entry
+			FeedMessage feed = new FeedMessage();
+			feed.setTitle(posts.get(i).getTitle());
+			feed.setDescription(posts.get(i).getContent());
+			feed.setGuid(posts.get(i).getUrl());
+			feed.setLink(posts.get(i).getUrl());
+			feed.setPubDate(post.getPublishedDate());
+			rssFeeder.getMessages().add(feed);
+
 			// Si premier index
 			if (i == 0) {
 				post.setNext(posts.get(i + 1));
@@ -279,10 +307,14 @@ public class Spike extends DirectoryWatcher {
 
 		File XmlFolder = new File(output + File.separator + "feed");
 		XmlFolder.mkdirs();
-		FileWriter lXmlWriter = new FileWriter(output + File.separator + "feed"
-				+ File.separator + "rss2.xml");
-		lXmlWriter.write(lXmlFeed.toString());
-		lXmlWriter.close();
+		// Now write the file
+		RSSFeedWriter writer = new RSSFeedWriter(rssFeeder, output
+				+ File.separator + "feed" + File.separator + "rss2.xml");
+		try {
+			writer.write();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		lSite.getPosts().addAll(posts);
 		SimpleHash root = new SimpleHash();

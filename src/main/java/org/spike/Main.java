@@ -32,8 +32,7 @@ public class Main {
 			readDefaults();
 		}
 
-		String loutput = outputFolder + File.separator
-				+ output;
+		String loutput = outputFolder + File.separator + output;
 		Spike lSpike = new Spike(sourceFolder, loutput);
 
 		try {
