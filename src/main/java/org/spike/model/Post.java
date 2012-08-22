@@ -21,7 +21,7 @@ import java.util.List;
  *
  * @author mikomatic
  */
-public class Post {
+public class Post implements Comparable<Post>{
 
     private String title;
 
@@ -111,5 +111,10 @@ public class Post {
 
     public void setNext(Post nextPost) {
         this.next = nextPost;
+    }
+
+    @Override
+    public int compareTo( Post pPost ) {
+        return pPost.getPublishedDate().compareTo(this.getPublishedDate());
     }
 }

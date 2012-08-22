@@ -9,7 +9,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +28,6 @@ import org.spike.model.Post;
 import org.spike.model.RSSFeedWriter;
 import org.spike.model.Site;
 import org.spike.model.SpikeTools;
-import org.spike.model.XmlFeed;
 import org.spike.utils.DirectoryWatcher;
 import org.spike.utils.FileUtils;
 import org.yaml.snakeyaml.Yaml;
@@ -197,15 +195,7 @@ public class Spike extends DirectoryWatcher {
 			}
 		}
 
-		Collections.sort(posts, new Comparator<Post>() {
-
-			public int compare(Post o1, Post o2) {
-				return o2.getPublishedDate().compareTo(o1.getPublishedDate());
-			}
-
-		});
-		// XmlFeed only once posts are sorted by Date descending
-		XmlFeed lXmlFeed = new XmlFeed("www.mikomatic.com");
+		Collections.sort(posts);
 
 		// Build also xml feed
 		// Create the rss feed
@@ -257,8 +247,6 @@ public class Spike extends DirectoryWatcher {
 		}
 
 		int lNumberofPage = lSize / POST_PER_PAGE;
-		List<Page> lPages = new ArrayList<Page>();
-
 		for (int i = 0; i < lNumberofPage; i++) {
 			if (i == 0) {
 				continue;
