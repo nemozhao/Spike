@@ -15,105 +15,100 @@ import javax.xml.stream.events.XMLEvent;
 
 public class RSSFeedWriter {
 
-	private String outputFile;
-	private Feed rssfeed;
+    private String outputFile;
+    private Feed rssfeed;
 
-	public RSSFeedWriter(Feed rssfeed, String outputFile) {
-		this.rssfeed = rssfeed;
-		this.outputFile = outputFile;
-	}
+    public RSSFeedWriter( Feed rssfeed, String outputFile ) {
+        this.rssfeed = rssfeed;
+        this.outputFile = outputFile;
+    }
 
-	public void write() throws Exception {
+    public void write() throws Exception {
 
-		// Create a XMLOutputFactory
-		XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
+        // Create a XMLOutputFactory
+        XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
 
-		// Create XMLEventWriter
-		XMLEventWriter eventWriter = outputFactory.createXMLEventWriter(
-				new FileOutputStream(outputFile), "UTF-8");
+        // Create XMLEventWriter
+        XMLEventWriter eventWriter = outputFactory.createXMLEventWriter( new FileOutputStream( outputFile ), "UTF-8" );
 
-		// Create a EventFactory
+        // Create a EventFactory
 
-		XMLEventFactory eventFactory = XMLEventFactory.newInstance();
-		XMLEvent end = eventFactory.createDTD("\n");
+        XMLEventFactory eventFactory = XMLEventFactory.newInstance();
+        XMLEvent end = eventFactory.createDTD( "\n" );
 
-		// Create and write Start Tag
+        // Create and write Start Tag
 
-		StartDocument startDocument = eventFactory.createStartDocument();
-		eventWriter.add(startDocument);
+        StartDocument startDocument = eventFactory.createStartDocument( "UTF-8", "1.0" );
+        eventWriter.add( startDocument );
 
-		// Create open tag
-		eventWriter.add(end);
+        // Create open tag
+        eventWriter.add( end );
 
-		StartElement rssStart = eventFactory.createStartElement("", "", "rss");
-		eventWriter.add(rssStart);
-		eventWriter.add(eventFactory.createAttribute("version", "2.0"));
-		eventWriter.add(end);
+        StartElement rssStart = eventFactory.createStartElement( "", "", "rss" );
+        eventWriter.add( rssStart );
+        eventWriter.add( eventFactory.createAttribute( "version", "2.0" ) );
+        eventWriter.add( end );
+        eventWriter.add( eventFactory.createStartElement( "", "", "channel" ) );
+        eventWriter.add( end );
 
-		eventWriter.add(eventFactory.createStartElement("", "", "channel"));
-		eventWriter.add(end);
+        // Write the different nodes
 
-		// Write the different nodes
+        createNode( eventWriter, "title", rssfeed.getTitle() );
 
-		createNode(eventWriter, "title", rssfeed.getTitle());
+        createNode( eventWriter, "link", rssfeed.getLink() );
 
-		createNode(eventWriter, "link", rssfeed.getLink());
+        createNode( eventWriter, "description", rssfeed.getDescription() );
 
-		createNode(eventWriter, "description", rssfeed.getDescription());
+        createNode( eventWriter, "language", rssfeed.getLanguage() );
 
-		createNode(eventWriter, "language", rssfeed.getLanguage());
+        createNode( eventWriter, "copyright", rssfeed.getCopyright() );
 
-		createNode(eventWriter, "copyright", rssfeed.getCopyright());
+        createNode( eventWriter, "pubdate", rssfeed.getPubDate() );
 
-		createNode(eventWriter, "pubdate", rssfeed.getPubDate());
+        SimpleDateFormat date_format = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss" );
+        for ( FeedMessage entry : rssfeed.getMessages() ) {
+            eventWriter.add( eventFactory.createStartElement( "", "", "item" ) );
+            eventWriter.add( end );
+            createNode( eventWriter, "title", entry.getTitle().toString() );
+            createNode( eventWriter, "description", entry.getDescription() );
+            createNode( eventWriter, "link", entry.getLink() );
+            createNode( eventWriter, "author", entry.getAuthor() );
+            createNode( eventWriter, "guid", entry.getGuid() );
+            createNode( eventWriter, "category", entry.getCategory() );
+            String pubdate = date_format.format( entry.getPubDate() );
+            createNode( eventWriter, "pubDate", pubdate );
+            eventWriter.add( end );
+            eventWriter.add( eventFactory.createEndElement( "", "", "item" ) );
+            eventWriter.add( end );
 
-		SimpleDateFormat date_format = new SimpleDateFormat(
-				"yyyy-MM-dd'T'HH:mm:ss");
-		for (FeedMessage entry : rssfeed.getMessages()) {
-			eventWriter.add(eventFactory.createStartElement("", "", "item"));
-			eventWriter.add(end);
-			createNode(eventWriter, "title", entry.getTitle().toString());
-			createNode(eventWriter, "description", entry.getDescription());
-			createNode(eventWriter, "link", entry.getLink());
-			createNode(eventWriter, "author", entry.getAuthor());
-			createNode(eventWriter, "guid", entry.getGuid());
-			createNode(eventWriter, "category", entry.getCategory());
-			String pubdate = date_format.format(entry.getPubDate());
-			createNode(eventWriter, "pubDate", pubdate);
-			eventWriter.add(end);
-			eventWriter.add(eventFactory.createEndElement("", "", "item"));
-			eventWriter.add(end);
+        }
 
-		}
+        eventWriter.add( end );
+        eventWriter.add( eventFactory.createEndElement( "", "", "channel" ) );
+        eventWriter.add( end );
+        eventWriter.add( eventFactory.createEndElement( "", "", "rss" ) );
 
-		eventWriter.add(end);
-		eventWriter.add(eventFactory.createEndElement("", "", "channel"));
-		eventWriter.add(end);
-		eventWriter.add(eventFactory.createEndElement("", "", "rss"));
+        eventWriter.add( end );
 
-		eventWriter.add(end);
+        eventWriter.add( eventFactory.createEndDocument() );
 
-		eventWriter.add(eventFactory.createEndDocument());
+        eventWriter.close();
+    }
 
-		eventWriter.close();
-	}
-
-	private void createNode(XMLEventWriter eventWriter, String name,
-
-	String value) throws XMLStreamException {
-		XMLEventFactory eventFactory = XMLEventFactory.newInstance();
-		XMLEvent end = eventFactory.createDTD("\n");
-		XMLEvent tab = eventFactory.createDTD("\t");
-		// Create Start node
-		StartElement sElement = eventFactory.createStartElement("", "", name);
-		eventWriter.add(tab);
-		eventWriter.add(sElement);
-		// Create Content
-		Characters characters = eventFactory.createCharacters(value);
-		eventWriter.add(characters);
-		// Create End node
-		EndElement eElement = eventFactory.createEndElement("", "", name);
-		eventWriter.add(eElement);
-		eventWriter.add(end);
-	}
+    private void createNode( XMLEventWriter eventWriter, String name, String value ) throws XMLStreamException {
+        XMLEventFactory eventFactory = XMLEventFactory.newInstance();
+        XMLEvent end = eventFactory.createDTD( "\n" );
+        XMLEvent tab = eventFactory.createDTD( "\t" );
+        // Create Start node
+        StartElement sElement = eventFactory.createStartElement( "", "", name );
+        eventWriter.add( tab );
+        eventWriter.add( sElement );
+        // Create Content
+        Characters characters = eventFactory.createCharacters( value );
+        eventWriter.add( characters );
+        // Create End node
+        EndElement eElement = eventFactory.createEndElement( "", "", name );
+        eventWriter.add( eElement );
+        eventWriter.add( end );
+    }
 }

@@ -7,12 +7,15 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Logger;
 
 /**
  * <code>FileUtils</code>
  * @author mikomatic
  */
 public class FileUtils {
+
+    private static Logger log = Logger.getLogger( FileUtils.class.getName() );
 
     private FileUtils() {
         //private constructor to preevent class instance
@@ -21,7 +24,7 @@ public class FileUtils {
     public static void copyFolder( String pSrcPath, String pDestPath, FilenameFilter pFilter ) throws IOException {
         File lSource = new File( pSrcPath );
         if ( !lSource.exists() ) {
-            System.out.println( "Directory " + pSrcPath + "doesn't exists" );
+            log.info( "Directory " + pSrcPath + "doesn't exists" );
             return;
         }
 
@@ -31,7 +34,7 @@ public class FileUtils {
             File lDestination = new File( pDestPath );
             if ( !lDestination.exists() ) {
                 lDestination.mkdir();
-                System.out.println( "Directory copied from " + lSource + "  to " + lDestination );
+                log.info( "Directory copied from " + lSource + "  to " + lDestination );
             }
 
             //list all the directory contents
@@ -63,7 +66,7 @@ public class FileUtils {
 
             in.close();
             out.close();
-            System.out.println( "File copied from " + lSource + " to " + lDestination );
+            log.info( "File copied from " + lSource + " to " + lDestination );
         }
     }
 
