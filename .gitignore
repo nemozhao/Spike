@@ -2,3 +2,6 @@
 # Ignorer tous les fichiers cacher liés a OS X (.DS_STORE)
 .DS_STORE
 target
+.project
+.settings
+.classpath
