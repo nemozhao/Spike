@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.spike.log.SpikeLoggerFormatter;
+import org.spike.model.Archive;
 import org.spike.model.Feed;
 import org.spike.model.FeedMessage;
 import org.spike.model.Page;
@@ -114,10 +115,14 @@ public class Spike {
 	}
 
 	public void runProcess() throws IOException, TemplateException {
+	    runProcess( true );
+	}
+
+	public void runProcess(boolean pDeleteOutput) throws IOException, TemplateException {
 		List<Post> posts = new ArrayList<Post>();
 		// Si le repertoire source existe déjà, on le supprime TODO: à mettre en
 		// option
-		if (deleteOldOutput) {
+		if (deleteOldOutput && pDeleteOutput) {
 			FileUtils.deleteFolder(output);
 		}
 
@@ -134,8 +139,10 @@ public class Spike {
 		cfg.setObjectWrapper(new BeansWrapper());
 		Template lTemplateBase = null;
 		Template lTemplatePost = null;
+		Template lTemplateArchive = null;
 		lTemplateBase = cfg.getTemplate("index.ftl");
 		lTemplatePost = cfg.getTemplate("post.ftl");
+		lTemplateArchive = cfg.getTemplate("archive.ftl");
 
 		File folder = new File(sourcePath + File.separator + SRC_POSTS_FOLDER);
 		File[] listOfFiles = folder.listFiles();
@@ -316,6 +323,20 @@ public class Spike {
 				"UTF-8");
 		lTemplateBase.process(root, lSiteWriter);
 		long end = System.currentTimeMillis();
+
+
+		//Building archive page
+		if ( lTemplateArchive != null ) {
+		    File archiveFolder = new File(output + File.separator + "archive");
+		    archiveFolder.mkdirs();
+		    SimpleHash archiveHash = new SimpleHash();
+		    archiveHash.put( "map", new Archive(posts) );
+	        OutputStreamWriter lArchiveWriter = new OutputStreamWriter(
+	                new FileOutputStream( archiveFolder.getAbsolutePath()+File.separator+ "index.html"),
+	                "UTF-8");
+	        lTemplateArchive.process(archiveHash, lArchiveWriter);
+        }
+
 		log.info("Spike process - Processed site in was " + (end - start)
 				+ " ms. " + lSite.getPosts().size() + " Posts.");
 

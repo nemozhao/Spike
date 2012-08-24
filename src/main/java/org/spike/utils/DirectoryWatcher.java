@@ -3,7 +3,6 @@ package org.spike.utils;
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;
@@ -29,7 +28,7 @@ public abstract class DirectoryWatcher extends TimerTask {
 	public DirectoryWatcher(String path, String filter) {
 		this.sourcePath = path;
 		dfw = new DirFilterWatcher(filter, false);
-		List<File> listsfiles = FileUtils.listFiles(path, dfw);
+		List<File> listsfiles = FileUtils.listFiles(sourcePath, dfw);
 		File[] lFileArray = new File[listsfiles.size()];
 
 		filesArray = listsfiles.toArray(lFileArray);
@@ -46,11 +45,6 @@ public abstract class DirectoryWatcher extends TimerTask {
 	public final void run() {
 		HashSet<String> checkedFiles = new HashSet<String>();
 
-		List<File> listsfiles = FileUtils.listFiles(sourcePath, dfw);
-		File[] lFileArray = new File[listsfiles.size()];
-
-		filesArray = listsfiles.toArray(lFileArray);
-
 		// scan the files and check for modification/addition
 		for (File lFile : filesArray) {
 
@@ -60,23 +54,26 @@ public abstract class DirectoryWatcher extends TimerTask {
 				// new file
 				dir.put(lFilePathName, new Long(lFile.lastModified()));
 				onChange(lFilePathName, "add");
+				break;
 			} else if (current.longValue() != lFile.lastModified()) {
 				// modified file
 				dir.put(lFilePathName, new Long(lFile.lastModified()));
 				onChange(lFilePathName, "modify");
+				break;
 			}
 			checkedFiles.add(lFilePathName);
 		}
 
-		HashSet<String> lAllFiles = new HashSet<String>(dir.keySet());
-		lAllFiles.removeAll(checkedFiles);
-		// If All is not null, this means a files has been deleted
-		Iterator<String> it = lAllFiles.iterator();
-		while (it.hasNext()) {
-			String lDeletedPathName = it.next();
-			dir.remove(lDeletedPathName);
-			onChange(lDeletedPathName, "delete");
-		}
+//		HashSet<String> lAllFiles = new HashSet<String>(dir.keySet());
+//		lAllFiles.removeAll(checkedFiles);
+//		// If All is not null, this means a files has been deleted
+//		Iterator<String> it = lAllFiles.iterator();
+//		while (it.hasNext()) {
+//			String lDeletedPathName = it.next();
+//			dir.remove(lDeletedPathName);
+//			onChange(lDeletedPathName, "delete");
+//			break;
+//		}
 
 	}
 

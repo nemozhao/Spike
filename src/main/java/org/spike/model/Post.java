@@ -13,12 +13,14 @@
 package org.spike.model;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
  * <code>Post</code>
- * 
+ *
  * @author mikomatic
  */
 public class Post implements Comparable<Post> {
@@ -31,7 +33,7 @@ public class Post implements Comparable<Post> {
 
 	private String content = "";
 
-	private Date publishedDate;
+	private Calendar publishedDate;
 
 	private String url;
 
@@ -58,8 +60,12 @@ public class Post implements Comparable<Post> {
 	}
 
 	public Date getPublishedDate() {
-		return publishedDate;
+		return publishedDate.getTime();
 	}
+
+	public Calendar getPublishedTime() {
+        return publishedDate;
+    }
 
 	public void setTitle(String pTitle) {
 		title = pTitle;
@@ -78,7 +84,9 @@ public class Post implements Comparable<Post> {
 	}
 
 	public void setPublishedDate(Date pPublishedDate) {
-		publishedDate = pPublishedDate;
+	    Calendar lCalendar = new GregorianCalendar();
+	    lCalendar.setTime( pPublishedDate );
+		publishedDate = lCalendar;
 	}
 
 	public String getUrl() {
