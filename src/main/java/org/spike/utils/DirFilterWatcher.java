@@ -15,28 +15,37 @@ package org.spike.utils;
 import java.io.File;
 import java.io.FileFilter;
 
-
 /**
  * <code>DirFilterWatcher</code>
+ * 
  * @author mikomatic
  */
 public class DirFilterWatcher implements FileFilter {
 
-    private String filter;
+	private String filter;
 
-    public DirFilterWatcher() {
-      this.filter = "";
-    }
+	private boolean isAccepted;
 
-    public DirFilterWatcher(String filter) {
-      this.filter = filter;
-    }
+	public DirFilterWatcher() {
+		this.filter = "";
+	}
 
-    public boolean accept(File file) {
-      if ("".equals(filter)) {
-        return true;
-      }
-      return (file.getName().startsWith(filter));
-    }
+	public DirFilterWatcher(String filter) {
+		this.filter = filter;
+		isAccepted = true;
+	}
+
+	public DirFilterWatcher(String filter, boolean isAccepted) {
+		this.filter = filter;
+		this.isAccepted = isAccepted;
+	}
+
+	public boolean accept(File file) {
+		if ("".equals(filter)) {
+			return true;
+		}
+		return isAccepted ? file.getName().startsWith(filter) : !(file
+				.getName().startsWith(filter));
+	}
 
 }

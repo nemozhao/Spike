@@ -18,103 +18,102 @@ import java.util.List;
 
 /**
  * <code>Post</code>
- *
+ * 
  * @author mikomatic
  */
-public class Post implements Comparable<Post>{
+public class Post implements Comparable<Post> {
 
-    private String title;
+	private String title;
 
-    private String category;
+	private String category;
 
-    private List<String> tags = new ArrayList<String>();
+	private List<String> tags = new ArrayList<String>();
 
-    private String content = "";
+	private String content = "";
 
-    private Date publishedDate;
+	private Date publishedDate;
 
-    private String url;
+	private String url;
 
-    private String source;
+	private String source;
 
-    private Post previous;
+	private Post previous;
 
-    private Post next;
+	private Post next;
 
-    public String getTitle() {
-        return title;
-    }
+	public String getTitle() {
+		return title;
+	}
 
-    public String getCategory() {
-        return category;
-    }
+	public String getCategory() {
+		return category;
+	}
 
-    public List<String> getTags() {
-        return tags;
-    }
+	public List<String> getTags() {
+		return tags;
+	}
 
-    public String getContent() {
-        return content;
-    }
+	public String getContent() {
+		return content;
+	}
 
-    public Date getPublishedDate() {
-        return publishedDate;
-    }
+	public Date getPublishedDate() {
+		return publishedDate;
+	}
 
-    public void setTitle(String pTitle) {
-        title = pTitle;
-    }
+	public void setTitle(String pTitle) {
+		title = pTitle;
+	}
 
-    public void setCategory(String pCategory) {
-        category = pCategory;
-    }
+	public void setCategory(String pCategory) {
+		category = pCategory;
+	}
 
-    public void setTags(List<String> pTags) {
-        tags = pTags;
-    }
+	public void setTags(List<String> pTags) {
+		tags = pTags;
+	}
 
-    public void setContent(String pContent) {
-        content = pContent;
-    }
+	public void setContent(String pContent) {
+		content = pContent;
+	}
 
-    public void setPublishedDate(Date pPublishedDate) {
-        publishedDate = pPublishedDate;
-    }
+	public void setPublishedDate(Date pPublishedDate) {
+		publishedDate = pPublishedDate;
+	}
 
-    public String getUrl() {
-        return url;
-    }
+	public String getUrl() {
+		return url;
+	}
 
-    public void setUrl(String pUrl) {
-        url = pUrl;
-    }
+	public void setUrl(String pUrl) {
+		url = pUrl;
+	}
 
-    public String getSource() {
-        return source;
-    }
+	public String getSource() {
+		return source;
+	}
 
-    public void setSource(String source) {
-        this.source = source;
-    }
+	public void setSource(String source) {
+		this.source = source;
+	}
 
-    public Post getPrevious() {
-        return previous;
-    }
+	public Post getPrevious() {
+		return previous;
+	}
 
-    public void setPrevious(Post previousPost) {
-        this.previous = previousPost;
-    }
+	public void setPrevious(Post previousPost) {
+		this.previous = previousPost;
+	}
 
-    public Post getNext() {
-        return next;
-    }
+	public Post getNext() {
+		return next;
+	}
 
-    public void setNext(Post nextPost) {
-        this.next = nextPost;
-    }
+	public void setNext(Post nextPost) {
+		this.next = nextPost;
+	}
 
-    @Override
-    public int compareTo( Post pPost ) {
-        return pPost.getPublishedDate().compareTo(this.getPublishedDate());
-    }
+	public int compareTo(Post pPost) {
+		return pPost.getPublishedDate().compareTo(this.getPublishedDate());
+	}
 }
