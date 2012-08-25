@@ -3,15 +3,18 @@ package org.spike;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -23,7 +26,7 @@ import java.util.regex.Pattern;
 import org.spike.log.SpikeLoggerFormatter;
 import org.spike.model.Archive;
 import org.spike.model.Feed;
-import org.spike.model.FeedMessage;
+import org.spike.model.FeedItem;
 import org.spike.model.Page;
 import org.spike.model.Paginator;
 import org.spike.model.Post;
@@ -68,9 +71,13 @@ public class Spike {
 	private static Pattern delimiterPtrn = Pattern.compile("\\s*[-]{3}\\s*\\n");
 
 	private static MarkdownProcessor mdProcessor = new MarkdownProcessor();
-	private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
-			"yyyy-MM-dd");
-	private String outputName;;
+	private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+	private static Archive archive = new Archive();
+	private static Feed rssFeeder = initFeed();
+	private String outputName;
+	private Configuration templateConfig;
+	private Map<String, Post> cachedPosts;;
 
 	public Spike(String pSource, String pOutput, String pOutputName) {
 		outputName = pOutputName;
@@ -115,151 +122,202 @@ public class Spike {
 	}
 
 	public void runProcess() throws IOException, TemplateException {
-	    runProcess( true );
+		runProcess(true);
 	}
 
 	public void runProcess(boolean pDeleteOutput) throws IOException, TemplateException {
-		List<Post> posts = new ArrayList<Post>();
-		// Si le repertoire source existe dÈj‡, on le supprime TODO: ‡ mettre en
-		// option
+		// Si le repertoire source existe d√©ja, on le supprime
 		if (deleteOldOutput && pDeleteOutput) {
 			FileUtils.deleteFolder(output);
 		}
 
 		long start = System.currentTimeMillis();
 
-		Configuration cfg = new Configuration();
-		// Specify the data source where the template files come from.
-		// Here I set a file directory for it:
-		cfg.setDirectoryForTemplateLoading(new File(sourcePath + File.separator
-				+ SRC_TEMPLATE_FOLDER));
-		// Specify how templates will see the data-model. This is an advanced
-		// topic...
-		// but just use this:
-		cfg.setObjectWrapper(new BeansWrapper());
-		Template lTemplateBase = null;
-		Template lTemplatePost = null;
+		initTemplateConfig();
+		Template lTemplateBase = templateConfig.getTemplate("index.ftl");
+		Template lTemplatePost = templateConfig.getTemplate("post.ftl");
 		Template lTemplateArchive = null;
-		lTemplateBase = cfg.getTemplate("index.ftl");
-		lTemplatePost = cfg.getTemplate("post.ftl");
-		lTemplateArchive = cfg.getTemplate("archive.ftl");
+		try {
+			lTemplateArchive = templateConfig.getTemplate("archive.ftl");
+		} catch (IOException e) {
+			// Do nothing
+		}
+		Template lTemplateNavigation = null;
+		try {
+			lTemplateNavigation = templateConfig.getTemplate("nav.ftl");
+		} catch (IOException e) {
+			// Do nothing
+		}
 
 		File folder = new File(sourcePath + File.separator + SRC_POSTS_FOLDER);
-		File[] listOfFiles = folder.listFiles();
-		File lPostsFolder = new File(sourcePath + File.separator + POSTS_FOLDER);
-		if (!lPostsFolder.exists()) {
-			lPostsFolder.mkdir();
-		}
-		Site lSite = new Site();
+		FilenameFilter lPostsFilter = new FilenameFilter() {
 
-		for (File lFile : listOfFiles) {
+			public boolean accept(File dir, String name) {
+				return name.matches("^.*((\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d))-.+\\..+$");
+			}
+		};
+		File[] listOfFiles = folder.listFiles(lPostsFilter);
+
+		// Order by date descending
+		Arrays.sort(listOfFiles, new Comparator<File>() {
+
+			public int compare(File o1, File o2) {
+				return -o1.getName().compareTo(o2.getName());
+			}
+
+		});
+
+		cachedPosts = new LinkedHashMap<String, Post>(listOfFiles.length);
+		for (int i = 0; i < listOfFiles.length; i++) {
+			File lFile = listOfFiles[i];
 			try {
-				String lFileName = lFile.getName();
-				if (!lFileName
-						.matches("^.*((\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d))-.+\\..+$")) {
-					continue;
+				Post lPost = getFromCache(lFile);
+
+				String lPrevious = null;
+				String lNext = null;
+				// Si premier index
+				if (i == 0) {
+					lPrevious = listOfFiles[i + 1].getName();
+					cachedPosts.put(lPrevious, getFromCache(listOfFiles[i + 1]));
+					// dernier index
+				} else if (i == listOfFiles.length - 1) {
+					lNext = listOfFiles[i - 1].getName();
+					cachedPosts.put(lNext, getFromCache(listOfFiles[i - 1]));
+				} else {
+					lPrevious = listOfFiles[i + 1].getName();
+					cachedPosts.put(lPrevious, getFromCache(listOfFiles[i + 1]));
+					lNext = listOfFiles[i - 1].getName();
+					cachedPosts.put(lNext, getFromCache(listOfFiles[i - 1]));
 				}
-				String lSplit = lFileName
-						.split("^.*((\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d))-")[1];
-				String[] lFileInfo = lSplit.split("\\.");
-				String lFilePath = lFileInfo[0];
-				String lExtension = lFileInfo[1];
-				//
-				String lDate = lFileName.substring(0, 10);
-				Calendar lCalendar = (Calendar) simpleDateFormat.getCalendar()
-						.clone();
-				lCalendar.setTime(simpleDateFormat.parse(lDate));
+				lPost.setPrevious(cachedPosts.get(lPrevious));
+				lPost.setNext(cachedPosts.get(lNext));
 
-				Post lPost = readFile(lFile, lExtension);
-				String lPostUrl = File.separator + lCalendar.get(Calendar.YEAR)
-						+ File.separator + (lCalendar.get(Calendar.MONTH) + 1)
-						+ File.separator + lCalendar.get(Calendar.DAY_OF_MONTH)
-						+ File.separator + lFilePath + File.separator;
+				addFeedItem(lPost);
+				archive.add(lPost);
 
-				String lPostUrlEscaped = lPostUrl.replace(" ", "_");
-				File lPostDirectory = new File(output + lPostUrlEscaped);
-				lPostDirectory.mkdirs();
-				lPost.setUrl(lPostUrlEscaped);
-				lPost.setPublishedDate(lCalendar.getTime());
-
-				// SimpleHash postHash = new SimpleHash();
-				// postHash.put(POSTS_FOLDER, lPost);
-				// File lPostFile = new File(lPostDirectoryUrl);
-				// log.info("Creating file " + lPostDirectoryUrl);
-				// lPostFile.createNewFile();
-				// FileWriter lPostFileW = new FileWriter(lPostFile);
-				// lTemplatePost.process(postHash, lPostFileW);
-				posts.add(lPost);
+				// Building post index.html
+				buildPost(lPost, lTemplatePost);
 
 			} catch (FileNotFoundException e) {
-				log.info("Creating file " + lFile.getAbsolutePath() + " :"
+				System.out.println("Error reading File" + lFile.getAbsolutePath() + " :"
 						+ e.getMessage());
+				log.log(Level.WARNING, "Error reading File", e);
+			}
+		}
+
+		// Building pagination
+		processPagination(new ArrayList<Post>(cachedPosts.values()), lTemplateBase);
+
+		// Create Rss Feed
+		buildRssFeed(rssFeeder);
+
+		// Building Index.html
+		buildIndex(new ArrayList<Post>(cachedPosts.values()), lTemplateBase);
+
+		// Building archive page
+		if (lTemplateArchive != null) {
+			processArchiveTemplate(lTemplateArchive);
+		}
+
+		long end = System.currentTimeMillis();
+		log.info("Spike process - Processed site in was " + (end - start) + " ms. "
+				+ listOfFiles.length + " Posts.");
+
+	}
+
+	/**
+	 * Retourne le post √† partir du nom du fichier. On le met en cache si
+	 * n√©c√©ssaire afin de pas recr√©er un post existant
+	 * 
+	 * @param pFile
+	 * @return
+	 * @throws FileNotFoundException
+	 */
+	private Post getFromCache(File pFile) throws FileNotFoundException {
+		String lFileName = pFile.getName();
+		if (cachedPosts.containsKey(lFileName)) {
+			return cachedPosts.get(lFileName);
+		} else {
+			String lSplit = lFileName.split("^.*((\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d))-")[1];
+			String[] lFileInfo = lSplit.split("\\.");
+			String lFilePath = lFileInfo[0];
+			String lExtension = lFileInfo[1];
+
+			String lDate = lFileName.substring(0, 10);
+			Calendar lCalendar = (Calendar) simpleDateFormat.getCalendar().clone();
+			try {
+				lCalendar.setTime(simpleDateFormat.parse(lDate));
 			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				// Should Never Happen
 			}
+
+			Post lPost = readFile(pFile, lExtension);
+			String lPostUrl = buildPostUrl(lFilePath, lCalendar);
+			lPost.setUrl(lPostUrl.replace(" ", "_"));
+			lPost.setPublishedDate(lCalendar.getTime());
+
+			cachedPosts.put(lFileName, lPost);
+			return lPost;
 		}
 
-		Collections.sort(posts);
+	}
 
-		// Build also xml feed
-		// Create the rss feed
-		String copyright = "Copyright hold by Mikomatic";
-		String title = "Mike's blog";
-		String description = "Blogging about software, movies, life, and every thing else in between";
-		String language = "fr";
-		String link = "http://www.mikomatic.com";
-		Date creationDate = new Date();
-		SimpleDateFormat date_format = new SimpleDateFormat(
-				"yyyy-MM-dd'T'HH:mm:ss");
-		String pubdate = date_format.format(creationDate);
-		Feed rssFeeder = new Feed(title, link, description, language,
-				copyright, pubdate);
-
-		int lSize = posts.size();
-		for (int i = 0; i < lSize; i++) {
-			Post post = posts.get(i);
-
-			// Now add one example entry
-			FeedMessage feed = new FeedMessage();
-			feed.setTitle(posts.get(i).getTitle());
-			feed.setDescription(posts.get(i).getContent()
-					+ posts.get(i).getTags());
-			feed.setGuid(posts.get(i).getUrl());
-			feed.setLink(posts.get(i).getUrl());
-			feed.setPubDate(post.getPublishedDate());
-			rssFeeder.getMessages().add(feed);
-
-			// Si premier index
-			if (i == 0) {
-				post.setNext(posts.get(i + 1));
-				// dernier index
-			} else if (i == lSize - 1) {
-				post.setPrevious(posts.get(i - 1));
-			} else {
-				post.setNext(posts.get(i + 1));
-				post.setPrevious(posts.get(i - 1));
-			}
-
+	private void buildPost(Post pPost, Template lTemplatePost) throws TemplateException {
+		String lPostDirectoryUrl = output + pPost.getUrl() + "index." + HTML_EXT;
+		File lPostFile = new File(lPostDirectoryUrl);
+		try {
 			SimpleHash postHash = new SimpleHash();
-			postHash.put(POSTS_FOLDER, post);
-			String lPostDirectoryUrl = output + post.getUrl() + "index."
-					+ HTML_EXT;
-			File lPostFile = new File(lPostDirectoryUrl);
+			postHash.put(POSTS_FOLDER, pPost);
 			log.info("Creating file " + lPostDirectoryUrl);
+			if (!lPostFile.getParentFile().exists()) {
+				lPostFile.getParentFile().mkdirs();
+			}
 			lPostFile.createNewFile();
-			OutputStreamWriter lPostFileW = new OutputStreamWriter(
-					new FileOutputStream(lPostFile), "UTF-8");
+			OutputStreamWriter lPostFileW = new OutputStreamWriter(new FileOutputStream(lPostFile),
+					"UTF-8");
 			lTemplatePost.process(postHash, lPostFileW);
+		} catch (IOException e) {
+			System.out.println("Error creating File" + lPostFile + " :" + e.getMessage());
+			log.log(Level.WARNING, "Error creating File", e);
 		}
+	}
 
-		int lNumberofPage = lSize / POST_PER_PAGE;
+	private Site buildIndex(List<Post> lPosts, Template lTemplateBase) throws TemplateException,
+			IOException {
+		Site lSite = new Site();
+		lSite.getPosts().addAll(lPosts);
+		SimpleHash root = new SimpleHash();
+		root.put("paginator", SpikeTools.getPaginator(null, File.separator + "Page1"));
+		root.put("site", lSite);
+		OutputStreamWriter lSiteWriter = new OutputStreamWriter(new FileOutputStream(output
+				+ File.separator + "index.html"), "UTF-8");
+		lTemplateBase.process(root, lSiteWriter);
+		return lSite;
+	}
+
+	private void buildRssFeed(Feed lRssFeeder) {
+		File XmlFolder = new File(output + File.separator + "feed");
+		XmlFolder.mkdirs();
+		// Now write the file
+		RSSFeedWriter writer = new RSSFeedWriter(lRssFeeder, output + File.separator + "feed"
+				+ File.separator + "rss2.xml");
+		try {
+			writer.write();
+		} catch (Exception e) {
+			// should not happen
+			System.out.println("Error writing RSS Feed : " + e.getMessage());
+		}
+	}
+
+	private void processPagination(List<Post> lPosts, Template lTemplateBase)
+			throws TemplateException, IOException {
+		int lNumberofPage = lPosts.size() / POST_PER_PAGE;
 		for (int i = 0; i < lNumberofPage; i++) {
 			if (i == 0) {
 				continue;
 			}
-			List<Post> subList = posts.subList(i * POST_PER_PAGE, i
-					* POST_PER_PAGE + POST_PER_PAGE);
+			List<Post> subList = lPosts.subList(i * POST_PER_PAGE, i * POST_PER_PAGE
+					+ POST_PER_PAGE);
 
 			Page lPage = new Page();
 			lPage.setUrl(File.separator + "Page" + i);
@@ -267,26 +325,21 @@ public class Spike {
 			// premier index
 			Paginator lPaginator = null;
 			if (i == 0) {
-				lPaginator = SpikeTools.getPaginator(null, File.separator
-						+ "Page" + (i + 1));
+				lPaginator = SpikeTools.getPaginator(null, File.separator + "Page" + (i + 1));
 			} else {
 				if (i == lNumberofPage - 1) {
-					lPaginator = SpikeTools.getPaginator(File.separator
-							+ "Page" + (i - 1), null);
+					lPaginator = SpikeTools.getPaginator(File.separator + "Page" + (i - 1), null);
 				} else {
 					if (i == 1) {
-						lPaginator = SpikeTools.getPaginator(File.separator
-								+ "index.html", File.separator + "Page"
-								+ (i + 1));
+						lPaginator = SpikeTools.getPaginator(File.separator + "index.html",
+								File.separator + "Page" + (i + 1));
 					} else {
-						lPaginator = SpikeTools.getPaginator(File.separator
-								+ "Page" + (i - 1), File.separator + "Page"
-								+ (i + 1));
+						lPaginator = SpikeTools.getPaginator(File.separator + "Page" + (i - 1),
+								File.separator + "Page" + (i + 1));
 					}
 				}
 
-				String lPageDirectory = output + File.separator + "Page" + (i)
-						+ File.separator;
+				String lPageDirectory = output + File.separator + "Page" + (i) + File.separator;
 				File lPostDirectory = new File(lPageDirectory);
 				lPostDirectory.mkdirs();
 
@@ -295,51 +348,66 @@ public class Spike {
 				SimpleHash root = new SimpleHash();
 				root.put("site", lSubPosts);
 				root.put("paginator", lPaginator);
-				OutputStreamWriter lPageW = new OutputStreamWriter(
-						new FileOutputStream(lPageDirectory + "index.html"),
-						"UTF-8");
+				OutputStreamWriter lPageW = new OutputStreamWriter(new FileOutputStream(
+						lPageDirectory + "index.html"), "UTF-8");
 				lTemplateBase.process(root, lPageW);
 			}
 		}
+	}
 
-		File XmlFolder = new File(output + File.separator + "feed");
-		XmlFolder.mkdirs();
-		// Now write the file
-		RSSFeedWriter writer = new RSSFeedWriter(rssFeeder, output
-				+ File.separator + "feed" + File.separator + "rss2.xml");
-		try {
-			writer.write();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	private void processArchiveTemplate(Template lTemplateArchive) throws TemplateException,
+			IOException {
+		File archiveFolder = new File(output + File.separator + "archive");
+		archiveFolder.mkdirs();
+		SimpleHash archiveHash = new SimpleHash();
+		archiveHash.put("archive", archive.getArchiveMap());
+		OutputStreamWriter lArchiveWriter = new OutputStreamWriter(new FileOutputStream(
+				archiveFolder.getAbsolutePath() + File.separator + "index.html"), "UTF-8");
+		lTemplateArchive.process(archiveHash, lArchiveWriter);
+	}
 
-		lSite.getPosts().addAll(posts);
-		SimpleHash root = new SimpleHash();
-		root.put("paginator",
-				SpikeTools.getPaginator(null, File.separator + "Page1"));
-		root.put("site", lSite);
-		OutputStreamWriter lSiteWriter = new OutputStreamWriter(
-				new FileOutputStream(output + File.separator + "index.html"),
-				"UTF-8");
-		lTemplateBase.process(root, lSiteWriter);
-		long end = System.currentTimeMillis();
+	private void addFeedItem(Post post) {
+		FeedItem feed = new FeedItem();
+		feed.setTitle(post.getTitle());
+		feed.setDescription(post.getContent() + post.getTags());
+		feed.setGuid(post.getUrl());
+		feed.setLink(post.getUrl());
+		feed.setPubDate(post.getPublishedDate());
+		rssFeeder.getMessages().add(feed);
+	}
 
+	private String buildPostUrl(String lFilePath, Calendar lCalendar) {
+		StringBuilder lStringBuilder = new StringBuilder();
+		lStringBuilder.append(File.separator);
+		lStringBuilder.append(lCalendar.get(Calendar.YEAR));
+		lStringBuilder.append(File.separator);
+		lStringBuilder.append(lCalendar.get(Calendar.MONTH) + 1);
+		lStringBuilder.append(File.separator);
+		lStringBuilder.append(lCalendar.get(Calendar.DAY_OF_MONTH));
+		lStringBuilder.append(File.separator);
+		lStringBuilder.append(lFilePath);
+		lStringBuilder.append(File.separator);
+		return lStringBuilder.toString();
+	}
 
-		//Building archive page
-		if ( lTemplateArchive != null ) {
-		    File archiveFolder = new File(output + File.separator + "archive");
-		    archiveFolder.mkdirs();
-		    SimpleHash archiveHash = new SimpleHash();
-		    archiveHash.put( "map", new Archive(posts) );
-	        OutputStreamWriter lArchiveWriter = new OutputStreamWriter(
-	                new FileOutputStream( archiveFolder.getAbsolutePath()+File.separator+ "index.html"),
-	                "UTF-8");
-	        lTemplateArchive.process(archiveHash, lArchiveWriter);
-        }
+	private void initTemplateConfig() throws IOException {
+		templateConfig = new Configuration();
+		templateConfig.setDirectoryForTemplateLoading(new File(sourcePath + File.separator
+				+ SRC_TEMPLATE_FOLDER));
+		// Specify how templates will see the data-model.
+		templateConfig.setObjectWrapper(new BeansWrapper());
+	}
 
-		log.info("Spike process - Processed site in was " + (end - start)
-				+ " ms. " + lSite.getPosts().size() + " Posts.");
-
+	private static Feed initFeed() {
+		String copyright = "Copyright hold by Mikomatic";
+		String title = "Mike's blog";
+		String description = "Blogging about software, movies, life, and every thing else in between";
+		String language = "fr";
+		String link = "http://www.mikomatic.com";
+		Date creationDate = new Date();
+		SimpleDateFormat date_format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		String pubdate = date_format.format(creationDate);
+		return new Feed(title, link, description, language, copyright, pubdate);
 	}
 
 	private static void readConfigFile() {
@@ -360,15 +428,13 @@ public class Spike {
 			log.addHandler(logFile);
 			// log.addHandler()
 		} catch (Exception e) {
-			System.out
-					.println("Error setting up logger file " + e.getMessage());
+			System.out.println("Error setting up logger file " + e.getMessage());
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	private final static void readYamlHeader(Post pPost, final String pHeader) {
-		Map<String, Object> lLoad = (Map<String, Object>) new Yaml()
-				.load(pHeader);
+		Map<String, Object> lLoad = (Map<String, Object>) new Yaml().load(pHeader);
 
 		pPost.setTitle((String) lLoad.get(SpikeCst.TITLE));
 		pPost.setCategory((String) lLoad.get(SpikeCst.CATEGORY));

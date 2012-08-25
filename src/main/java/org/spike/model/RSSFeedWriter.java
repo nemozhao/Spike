@@ -66,7 +66,7 @@ public class RSSFeedWriter {
         createNode( eventWriter, "pubdate", rssfeed.getPubDate() );
 
         SimpleDateFormat date_format = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss" );
-        for ( FeedMessage entry : rssfeed.getMessages() ) {
+        for ( FeedItem entry : rssfeed.getMessages() ) {
             eventWriter.add( eventFactory.createStartElement( "", "", "item" ) );
             eventWriter.add( end );
             createNode( eventWriter, "title", entry.getTitle().toString() );

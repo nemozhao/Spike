@@ -14,7 +14,7 @@ public class Feed {
 	final String language;
 	final String copyright;
 	final String pubDate;
-	final List<FeedMessage> entries = new ArrayList<FeedMessage>();
+	final List<FeedItem> entries = new ArrayList<FeedItem>();
 
 	public Feed(String title, String link, String description, String language,
 			String copyright, String pubDate) {
@@ -26,7 +26,7 @@ public class Feed {
 		this.pubDate = pubDate;
 	}
 
-	public List<FeedMessage> getMessages() {
+	public List<FeedItem> getMessages() {
 		return entries;
 	}
 

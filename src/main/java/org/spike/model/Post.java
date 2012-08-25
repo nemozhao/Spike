@@ -20,10 +20,10 @@ import java.util.List;
 
 /**
  * <code>Post</code>
- *
+ * 
  * @author mikomatic
  */
-public class Post implements Comparable<Post> {
+public class Post {
 
 	private String title;
 
@@ -63,9 +63,9 @@ public class Post implements Comparable<Post> {
 		return publishedDate.getTime();
 	}
 
-	public Calendar getPublishedTime() {
-        return publishedDate;
-    }
+	public Calendar getPublishedCal() {
+		return publishedDate;
+	}
 
 	public void setTitle(String pTitle) {
 		title = pTitle;
@@ -84,8 +84,8 @@ public class Post implements Comparable<Post> {
 	}
 
 	public void setPublishedDate(Date pPublishedDate) {
-	    Calendar lCalendar = new GregorianCalendar();
-	    lCalendar.setTime( pPublishedDate );
+		Calendar lCalendar = new GregorianCalendar();
+		lCalendar.setTime(pPublishedDate);
 		publishedDate = lCalendar;
 	}
 
@@ -121,7 +121,4 @@ public class Post implements Comparable<Post> {
 		this.next = nextPost;
 	}
 
-	public int compareTo(Post pPost) {
-		return pPost.getPublishedDate().compareTo(this.getPublishedDate());
-	}
 }

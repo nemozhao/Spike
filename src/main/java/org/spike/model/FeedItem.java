@@ -3,9 +3,9 @@ package org.spike.model;
 import java.util.Date;
 
 /*
- * Represents one RSS message
+ * Represents one RSS Item
  */
-public class FeedMessage {
+public class FeedItem {
 
 	private String title;
 	private String description;
@@ -57,9 +57,8 @@ public class FeedMessage {
 
 	@Override
 	public String toString() {
-		return "FeedMessage [title=" + title + ", description=" + description
-				+ ", link=" + link + ", author=" + author + ", guid=" + guid
-				+ "]";
+		return "FeedMessage [title=" + title + ", description=" + description + ", link="
+				+ link + ", author=" + author + ", guid=" + guid + "]";
 	}
 
 	public String getCategory() {
