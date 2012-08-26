@@ -67,13 +67,11 @@ public class Spike {
 	private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
 	private static Feed rssFeeder = initFeed();
-	private String outputName;
 	private Configuration templateConfig;
 	private Map<String, Post> cachedPosts;;
 
-	public Spike(String pSource, String pOutput, String pOutputName) {
-		outputName = pOutputName;
-		output = pOutput + File.separator + pOutputName;
+	public Spike(String pSource, String pOutput) {
+		output = pOutput;
 		sourcePath = pSource;
 	}
 
@@ -184,6 +182,8 @@ public class Spike {
 		File categoriesFolder = new File(output + File.separator + "categories");
 		categoriesFolder.mkdirs();
 		SimpleHash categoriesHash = new SimpleHash();
+		categoriesHash.put("allCategories", Navigation.getCategoriesMap().keySet());
+		categoriesHash.put("allTags", Navigation.getTagsMap().keySet());
 		categoriesHash.put("categories", Navigation.getCategoriesMap());
 		OutputStreamWriter lArchiveWriter = new OutputStreamWriter(new FileOutputStream(
 				categoriesFolder.getAbsolutePath() + File.separator + "index.html"), "UTF-8");
@@ -233,6 +233,8 @@ public class Spike {
 		try {
 			SimpleHash postHash = new SimpleHash();
 			postHash.put(POSTS_FOLDER, pPost);
+			postHash.put("allCategories", Navigation.getCategoriesMap().keySet());
+			postHash.put("allTags", Navigation.getTagsMap().keySet());
 			log.fine("Creating file " + lPostDirectoryUrl);
 			if (!lPostFile.getParentFile().exists()) {
 				lPostFile.getParentFile().mkdirs();
@@ -329,6 +331,8 @@ public class Spike {
 		File archiveFolder = new File(output + File.separator + "archive");
 		archiveFolder.mkdirs();
 		SimpleHash archiveHash = new SimpleHash();
+		archiveHash.put("allCategories", Navigation.getCategoriesMap().keySet());
+		archiveHash.put("allTags", Navigation.getTagsMap().keySet());
 		archiveHash.put("archive", Navigation.getArchiveMap());
 		OutputStreamWriter lArchiveWriter = new OutputStreamWriter(new FileOutputStream(
 				archiveFolder.getAbsolutePath() + File.separator + "index.html"), "UTF-8");
@@ -436,10 +440,6 @@ public class Spike {
 
 	public String getSourcePath() {
 		return sourcePath;
-	}
-
-	public String getOutputName() {
-		return outputName;
 	}
 
 }

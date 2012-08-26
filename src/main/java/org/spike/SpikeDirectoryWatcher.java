@@ -23,8 +23,8 @@ public class SpikeDirectoryWatcher extends DirectoryWatcher {
 
 	private static Spike spike;
 
-	public SpikeDirectoryWatcher(Spike pSpike, String path) {
-		super(path);
+	public SpikeDirectoryWatcher(Spike pSpike) {
+		super(pSpike.getSourcePath());
 		spike = pSpike;
 	}
 
@@ -45,7 +45,7 @@ public class SpikeDirectoryWatcher extends DirectoryWatcher {
 				FilenameFilter lFilenameFilter = new FilenameFilter() {
 
 					public boolean accept(File dir, String name) {
-						return !name.startsWith("_") && !spike.getOutputName().equals(name);
+						return !name.startsWith("_") && !name.startsWith(".");
 					}
 				};
 

@@ -25,7 +25,6 @@ public class Main {
 	private static Logger log = Logger.getLogger(Main.class.getName());
 
 	private static String sourceFolder;
-	private static final String output = "site";
 	private static String outputFolder;
 	private static Boolean keepAlive;
 	private static Boolean server;
@@ -89,7 +88,11 @@ public class Main {
 			readDefaults();
 
 			printParameters();
-			Spike lSpike = new Spike(sourceFolder, outputFolder, output);
+
+			if (sourceFolder.equals(outputFolder)) {
+				outputFolder = outputFolder + File.separator + "site";
+			}
+			Spike lSpike = new Spike(sourceFolder, outputFolder);
 
 			System.out.println("Processing Posts and Layouts ...");
 			lSpike.runProcess();
@@ -97,13 +100,17 @@ public class Main {
 			FilenameFilter lFilenameFilter = new FilenameFilter() {
 
 				public boolean accept(File dir, String name) {
-					return !name.startsWith("_") && !output.equals(name);
+					return !name.startsWith("_")
+							&& //
+							!outputFolder.substring(
+									outputFolder.lastIndexOf(File.separatorChar) + 1).equals(name)
+							&& //
+							!name.startsWith(".");
 				}
 			};
 
 			System.out.println("Copying ressources files & directories...");
-			FileUtils.copyFolder(sourceFolder, outputFolder + File.separator + output,
-					lFilenameFilter);
+			FileUtils.copyFolder(sourceFolder, outputFolder, lFilenameFilter);
 
 			System.out
 					.println("Spike - success in " + (System.currentTimeMillis() - start) + " ms");
@@ -113,7 +120,7 @@ public class Main {
 
 			if (keepAlive) {
 				Timer t = new Timer();
-				t.schedule(new SpikeDirectoryWatcher(lSpike, sourceFolder), 0, 1 * 1000);
+				t.schedule(new SpikeDirectoryWatcher(lSpike), 0, 1 * 1000);
 			}
 
 			if (server || keepAlive) {
