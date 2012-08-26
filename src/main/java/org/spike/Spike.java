@@ -13,20 +13,17 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import org.spike.log.SpikeLoggerFormatter;
-import org.spike.model.Archive;
 import org.spike.model.Feed;
 import org.spike.model.FeedItem;
+import org.spike.model.Navigation;
 import org.spike.model.Page;
 import org.spike.model.Paginator;
 import org.spike.model.Post;
@@ -62,10 +59,6 @@ public class Spike {
 
 	private static Logger log = Logger.getLogger(Spike.class.getName());
 
-	private static Map<String, String> arguments;
-
-	private static Level logLevel;
-
 	private static boolean deleteOldOutput = true;
 
 	private static Pattern delimiterPtrn = Pattern.compile("\\s*[-]{3}\\s*\\n");
@@ -73,7 +66,6 @@ public class Spike {
 	private static MarkdownProcessor mdProcessor = new MarkdownProcessor();
 	private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-	private static Archive archive = new Archive();
 	private static Feed rssFeeder = initFeed();
 	private String outputName;
 	private Configuration templateConfig;
@@ -83,42 +75,6 @@ public class Spike {
 		outputName = pOutputName;
 		output = pOutput + File.separator + pOutputName;
 		sourcePath = pSource;
-	}
-
-	public static final void decodeArgs(String[] pArgs) {
-
-		arguments = new HashMap<String, String>();
-		// Scan the arguments
-		for (int i = 0, iMax = pArgs.length; i < iMax; i++) {
-
-			if (pArgs[i].startsWith("-")) {
-				String lKey = pArgs[i].substring(1);
-				String lValue = "";
-				if (i + 1 < iMax && !pArgs[i + 1].startsWith("-")) {
-					lValue = pArgs[i + 1];
-					i++;
-				}
-				arguments.put(lKey, lValue);
-			}
-		}
-
-		Logger Logger = java.util.logging.Logger.global;
-
-		if (arguments.get("info") != null) {
-			logLevel = Level.INFO;
-		} else if (arguments.get("trace") != null) {
-			logLevel = Level.FINE;
-		} else if (arguments.get("debug") != null) {
-			// logLevel = Level.deLVL_DEBUGLOG;
-		}
-
-		String lBatchSize = arguments.get("batchSize");
-
-		// sourcePath = arguments.get( "source" );
-		// if ( sourcePath == null ) {
-		// usage();
-		// }
-
 	}
 
 	public void runProcess() throws IOException, TemplateException {
@@ -131,8 +87,6 @@ public class Spike {
 			FileUtils.deleteFolder(output);
 		}
 
-		long start = System.currentTimeMillis();
-
 		initTemplateConfig();
 		Template lTemplateBase = templateConfig.getTemplate("index.ftl");
 		Template lTemplatePost = templateConfig.getTemplate("post.ftl");
@@ -142,9 +96,9 @@ public class Spike {
 		} catch (IOException e) {
 			// Do nothing
 		}
-		Template lTemplateNavigation = null;
+		Template lTemplateCategory = null;
 		try {
-			lTemplateNavigation = templateConfig.getTemplate("nav.ftl");
+			lTemplateCategory = templateConfig.getTemplate("category.ftl");
 		} catch (IOException e) {
 			// Do nothing
 		}
@@ -193,7 +147,7 @@ public class Spike {
 				lPost.setNext(cachedPosts.get(lNext));
 
 				addFeedItem(lPost);
-				archive.add(lPost);
+				Navigation.add(lPost);
 
 				// Building post index.html
 				buildPost(lPost, lTemplatePost);
@@ -218,11 +172,22 @@ public class Spike {
 		if (lTemplateArchive != null) {
 			processArchiveTemplate(lTemplateArchive);
 		}
+		if (lTemplateCategory != null) {
+			processCategoryTemplate(lTemplateCategory);
+		}
 
-		long end = System.currentTimeMillis();
-		log.info("Spike process - Processed site in was " + (end - start) + " ms. "
-				+ listOfFiles.length + " Posts.");
+		log.info("Process OK. Handled " + listOfFiles.length + " Posts.");
+	}
 
+	private void processCategoryTemplate(Template pTemplateCategory) throws TemplateException,
+			IOException {
+		File categoriesFolder = new File(output + File.separator + "categories");
+		categoriesFolder.mkdirs();
+		SimpleHash categoriesHash = new SimpleHash();
+		categoriesHash.put("categories", Navigation.getCategoriesMap());
+		OutputStreamWriter lArchiveWriter = new OutputStreamWriter(new FileOutputStream(
+				categoriesFolder.getAbsolutePath() + File.separator + "index.html"), "UTF-8");
+		pTemplateCategory.process(categoriesHash, lArchiveWriter);
 	}
 
 	/**
@@ -268,7 +233,7 @@ public class Spike {
 		try {
 			SimpleHash postHash = new SimpleHash();
 			postHash.put(POSTS_FOLDER, pPost);
-			log.info("Creating file " + lPostDirectoryUrl);
+			log.fine("Creating file " + lPostDirectoryUrl);
 			if (!lPostFile.getParentFile().exists()) {
 				lPostFile.getParentFile().mkdirs();
 			}
@@ -282,16 +247,18 @@ public class Spike {
 		}
 	}
 
-	private Site buildIndex(List<Post> lPosts, Template lTemplateBase) throws TemplateException,
+	private Site buildIndex(List<Post> lPosts, Template pTemplate) throws TemplateException,
 			IOException {
 		Site lSite = new Site();
 		lSite.getPosts().addAll(lPosts);
 		SimpleHash root = new SimpleHash();
 		root.put("paginator", SpikeTools.getPaginator(null, File.separator + "Page1"));
+		root.put("allCategories", Navigation.getCategoriesMap().keySet());
+		root.put("allTags", Navigation.getTagsMap().keySet());
 		root.put("site", lSite);
 		OutputStreamWriter lSiteWriter = new OutputStreamWriter(new FileOutputStream(output
 				+ File.separator + "index.html"), "UTF-8");
-		lTemplateBase.process(root, lSiteWriter);
+		pTemplate.process(root, lSiteWriter);
 		return lSite;
 	}
 
@@ -348,6 +315,8 @@ public class Spike {
 				SimpleHash root = new SimpleHash();
 				root.put("site", lSubPosts);
 				root.put("paginator", lPaginator);
+				root.put("allCategories", Navigation.getCategoriesMap().keySet());
+				root.put("allTags", Navigation.getTagsMap().keySet());
 				OutputStreamWriter lPageW = new OutputStreamWriter(new FileOutputStream(
 						lPageDirectory + "index.html"), "UTF-8");
 				lTemplateBase.process(root, lPageW);
@@ -360,7 +329,7 @@ public class Spike {
 		File archiveFolder = new File(output + File.separator + "archive");
 		archiveFolder.mkdirs();
 		SimpleHash archiveHash = new SimpleHash();
-		archiveHash.put("archive", archive.getArchiveMap());
+		archiveHash.put("archive", Navigation.getArchiveMap());
 		OutputStreamWriter lArchiveWriter = new OutputStreamWriter(new FileOutputStream(
 				archiveFolder.getAbsolutePath() + File.separator + "index.html"), "UTF-8");
 		lTemplateArchive.process(archiveHash, lArchiveWriter);
@@ -410,28 +379,6 @@ public class Spike {
 		return new Feed(title, link, description, language, copyright, pubdate);
 	}
 
-	private static void readConfigFile() {
-		File file = new File("./_config.yml");
-		if (!file.exists()) {
-			log.severe("Config file NOT OK");
-		} else {
-			log.info("Config file OK");
-		}
-	}
-
-	private static void initLogger() {
-
-		log.setLevel(Level.INFO);
-		try {
-			FileHandler logFile = new FileHandler("spike.log");
-			logFile.setFormatter(new SpikeLoggerFormatter());
-			log.addHandler(logFile);
-			// log.addHandler()
-		} catch (Exception e) {
-			System.out.println("Error setting up logger file " + e.getMessage());
-		}
-	}
-
 	@SuppressWarnings("unchecked")
 	private final static void readYamlHeader(Post pPost, final String pHeader) {
 		Map<String, Object> lLoad = (Map<String, Object>) new Yaml().load(pHeader);
@@ -455,7 +402,7 @@ public class Spike {
 		while (lScanner.hasNext()) {
 			String lNext = lScanner.next().trim();
 			if (i == 1) {
-				log.info("reading yaml header of file: " + pFile.getName());
+				log.fine("reading yaml header of file: " + pFile.getName());
 				readYamlHeader(lPost, lNext);
 				i += 1;
 				continue;
@@ -473,25 +420,14 @@ public class Spike {
 		return lPost;
 	}
 
-	/** Specify the correct parameters to use the class properly */
-	public static final void usage() {
-		System.out
-				.println("usage: Batch -name BatchName -config ContextPath -csvPath ExportedCsvPath [-verbose] [-debug] [-batchSize 500]");
-		System.out
-				.println("(ContextPath should be a repositorty which contains econtext.xml, erabledata.xml ...)");
-		System.out
-				.println("Batch -name PAR01PEEE -config /home/dataeee/etc/ -csvPath /home/dataEEE/home");
-		System.exit(1);
-	}
-
 	public final void initServer() {
 		try {
-			new NanoHTTPD(1666, new File(output));
+			new NanoHTTPD(1337, new File(output));
 		} catch (IOException ioe) {
 			System.err.println("Couldn't start server:\n" + ioe);
 			System.exit(-1);
 		}
-		log.info("Listening on port " + 1666 + ". Hit Enter to stop.\n");
+		log.info("Listening on port " + 1337 + ".\n");
 	}
 
 	public String getOutput() {

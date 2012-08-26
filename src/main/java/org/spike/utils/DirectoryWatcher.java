@@ -6,15 +6,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;
-import java.util.logging.Logger;
 
 /**
  * @author mikomatic
  */
 public abstract class DirectoryWatcher extends TimerTask {
-
-	private static Logger LOG = Logger.getLogger(DirectoryWatcher.class
-			.getName());
 
 	protected String sourcePath;
 	private File filesArray[];
@@ -33,8 +29,8 @@ public abstract class DirectoryWatcher extends TimerTask {
 
 		filesArray = listsfiles.toArray(lFileArray);
 
-		// On considère qu'il n'y a pas deux fichiers avec le même path et le
-		// même nom
+		// On considï¿½re qu'il n'y a pas deux fichiers avec le mï¿½me path et le
+		// mï¿½me nom
 		// lastModfied value
 		for (File lFile : filesArray) {
 			dir.put(lFile.getAbsolutePath(), new Long(lFile.lastModified()));
@@ -64,16 +60,16 @@ public abstract class DirectoryWatcher extends TimerTask {
 			checkedFiles.add(lFilePathName);
 		}
 
-//		HashSet<String> lAllFiles = new HashSet<String>(dir.keySet());
-//		lAllFiles.removeAll(checkedFiles);
-//		// If All is not null, this means a files has been deleted
-//		Iterator<String> it = lAllFiles.iterator();
-//		while (it.hasNext()) {
-//			String lDeletedPathName = it.next();
-//			dir.remove(lDeletedPathName);
-//			onChange(lDeletedPathName, "delete");
-//			break;
-//		}
+		// HashSet<String> lAllFiles = new HashSet<String>(dir.keySet());
+		// lAllFiles.removeAll(checkedFiles);
+		// // If All is not null, this means a files has been deleted
+		// Iterator<String> it = lAllFiles.iterator();
+		// while (it.hasNext()) {
+		// String lDeletedPathName = it.next();
+		// dir.remove(lDeletedPathName);
+		// onChange(lDeletedPathName, "delete");
+		// break;
+		// }
 
 	}
 

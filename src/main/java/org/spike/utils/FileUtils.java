@@ -25,8 +25,7 @@ public class FileUtils {
 		// private constructor to preevent class instance
 	}
 
-	private static void listFiles(String pSrcPath, FileFilter pFileFilter,
-			List<File> pFileList) {
+	private static void listFiles(String pSrcPath, FileFilter pFileFilter, List<File> pFileList) {
 		File[] listFiles = new File(pSrcPath).listFiles(pFileFilter);
 		if (listFiles != null) {
 			for (File file : listFiles) {
@@ -46,11 +45,11 @@ public class FileUtils {
 		return lFileList;
 	}
 
-	public static void copyFolder(String pSrcPath, String pDestPath,
-			FilenameFilter pFilter) throws IOException {
+	public static void copyFolder(String pSrcPath, String pDestPath, FilenameFilter pFilter)
+			throws IOException {
 		File lSource = new File(pSrcPath);
 		if (!lSource.exists()) {
-			log.info("Directory " + pSrcPath + "doesn't exists");
+			log.fine("Directory " + pSrcPath + "doesn't exists");
 			return;
 		}
 
@@ -60,8 +59,7 @@ public class FileUtils {
 			File lDestination = new File(pDestPath);
 			if (!lDestination.exists()) {
 				lDestination.mkdir();
-				log.info("Directory copied from " + lSource + "  to "
-						+ lDestination);
+				log.fine("Directory copied from " + lSource + "  to " + lDestination);
 			}
 
 			// list all the directory contents
@@ -72,8 +70,7 @@ public class FileUtils {
 				File srcFile = new File(lSource, file);
 				File destFile = new File(lDestination, file);
 				// recursive copy
-				copyFolder(srcFile.getAbsolutePath(),
-						destFile.getAbsolutePath(), pFilter);
+				copyFolder(srcFile.getAbsolutePath(), destFile.getAbsolutePath(), pFilter);
 			}
 
 		} else {
@@ -93,7 +90,7 @@ public class FileUtils {
 
 			in.close();
 			out.close();
-			log.info("File copied from " + lSource + " to " + lDestination);
+			log.fine("File copied from " + lSource + " to " + lDestination);
 		}
 	}
 
