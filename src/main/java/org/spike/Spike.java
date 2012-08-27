@@ -374,7 +374,7 @@ public class Spike {
 	private static Feed initFeed() {
 		String copyright = "Copyright hold by Mikomatic";
 		String title = "Mike's blog";
-		String description = "Blogging about software, movies, life, and every thing else in between";
+		String description = "Blogging about software, dance, movies, life, and every thing else in between. Mexican curious in french disguise";
 		String language = "fr";
 		String link = "http://www.mikomatic.com";
 		Date creationDate = new Date();
