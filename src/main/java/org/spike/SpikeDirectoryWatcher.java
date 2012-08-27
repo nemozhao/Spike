@@ -15,7 +15,7 @@ import freemarker.template.TemplateException;
 
 /**
  * @author mikomatic
- * 
+ *
  */
 public class SpikeDirectoryWatcher extends DirectoryWatcher {
 
@@ -38,7 +38,7 @@ public class SpikeDirectoryWatcher extends DirectoryWatcher {
 			// C'est un fichier lié au process. Il faut le relance
 			if (pFilePathName.replace(lFile.getAbsolutePath() + File.separator, "").startsWith("_")) {
 				System.out.println("Relaunching spike process...please wait");
-				spike.runProcess(false);
+				spike.runProcess();
 			}
 			// Sinon (eg. fichier d'affichage: css, js)
 			else {

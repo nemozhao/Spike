@@ -18,157 +18,166 @@ import freemarker.template.TemplateException;
 
 /**
  * @author mikomatic
- * 
+ *
  */
 public class Main {
 
-	private static Logger log = Logger.getLogger(Main.class.getName());
+    private static Logger log = Logger.getLogger( Main.class.getName() );
 
-	private static String sourceFolder;
-	private static String outputFolder;
-	private static Boolean keepAlive;
-	private static Boolean server;
+    private static String sourceFolder;
+    private static String outputFolder;
+    private static Boolean keepAlive;
+    private static Boolean server;
+    private static boolean outputDelete;
 
-	private static HashMap<String, String> arguments;
+    private static HashMap<String,String> arguments;
 
-	public static final void decodeArgs(String[] pArgs) {
+    public static final void decodeArgs( String[] pArgs ) {
 
-		arguments = new HashMap<String, String>();
-		// Scan the arguments
-		for (int i = 0, iMax = pArgs.length; i < iMax; i++) {
+        arguments = new HashMap<String,String>();
+        // Scan the arguments
+        for ( int i = 0, iMax = pArgs.length ; i < iMax ; i++ ) {
 
-			if (pArgs[i].startsWith("-")) {
-				String lKey = pArgs[i].substring(1);
-				String lValue = "";
-				if (i + 1 < iMax && !pArgs[i + 1].startsWith("-")) {
-					lValue = pArgs[i + 1];
-					i++;
-				}
-				arguments.put(lKey, lValue);
-			}
-		}
+            if ( pArgs[ i ].startsWith( "-" ) ) {
+                String lKey = pArgs[ i ].substring( 1 );
+                String lValue = "";
+                if ( i + 1 < iMax && !pArgs[ i + 1 ].startsWith( "-" ) ) {
+                    lValue = pArgs[ i + 1 ];
+                    i++;
+                }
+                arguments.put( lKey, lValue );
+            }
+        }
 
-		sourceFolder = arguments.get("source");
-		outputFolder = arguments.get("output");
-		keepAlive = arguments.get("keepAlive") != null ? true : false;
-		server = arguments.get("server") != null ? true : false;
+        sourceFolder = arguments.get( "source" );
+        outputFolder = arguments.get( "output" );
+        keepAlive = arguments.get( "keepAlive" ) != null ? true : false;
+        server = arguments.get( "server" ) != null ? true : false;
 
-		if (arguments.get("help") != null) {
-			usage();
-		}
+        outputDelete = arguments.get( "outputDelete" ) != null ? true : false;
 
-	}
+        if ( arguments.get( "help" ) != null ) {
+            usage();
+        }
 
-	/** Specify the correct parameters to use the class properly */
-	public static final void usage() {
-		System.out.println("Spike Parameters: -source -output -keepAlive -server");
-		System.out
-				.println("-source : Path to Source containing folders _layout and _posts (eg. C:/My/Path )");
-		System.out.println("Default is set to currentPath/_raw \n");
-		System.out
-				.println("-output : Path to output source  (eg. C:/My/Path/Output ) \n Tous les fichiers contenus dans -source seront copiés également");
-		System.out.println("Default is set to currentPath/_raw \n");
-		System.out
-				.println("-keepAlive : Keep processing alive. Will relaunch process if a file modification is detected");
-		System.out.println("Default is false\n");
-		System.out.println("-server : Launch local server for local testing. Port 1337 :) ");
-		System.out.println("Test the result @ localhost:1337");
-		System.out.println("Default is false\n");
-		System.exit(0);
-	}
+    }
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		System.out.println("Spike static blog generator  Copyright (C) 2012 by Miguel Ortega \n");
-		try {
-			long start = System.currentTimeMillis();
-			decodeArgs(args);
-			readDefaults();
+    /** Specify the correct parameters to use the class properly */
+    public static final void usage() {
+        System.out.println( "Spike Parameters: -source -output -keepAlive -server" );
+        System.out.println( "-source : Path to Source containing folders _layout and _posts (eg. C:/My/Path )" );
+        System.out.println( "Default is set to currentPath/_raw \n" );
+        System.out
+            .println( "-output : Path to output source  (eg. C:/My/Path/Output ) \n Tous les fichiers contenus dans -source seront copiés également" );
+        System.out.println( "Default is set to currentPath/_raw \n" );
+        System.out
+            .println( "-keepAlive : Keep processing alive. Will relaunch process if a file modification is detected" );
+        System.out.println( "Default is false\n" );
+        System.out.println( "-server : Launch local server for local testing. Port 1337 :) " );
+        System.out.println( "Test the result @ localhost:1337" );
+        System.out.println( "Default is false\n" );
+        System.exit( 0 );
+    }
 
-			printParameters();
+    /**
+     * @param args
+     */
+    public static void main( String[] args ) {
+        System.out.println( "Spike static blog generator  Copyright (C) 2012 by Miguel Ortega \n" );
+        try {
+            long start = System.currentTimeMillis();
+            decodeArgs( args );
+            readDefaults();
 
-			if (sourceFolder.equals(outputFolder)) {
-				outputFolder = outputFolder + File.separator + "site";
-			}
-			Spike lSpike = new Spike(sourceFolder, outputFolder);
+            printParameters();
 
-			System.out.println("Processing Posts and Layouts ...");
-			lSpike.runProcess();
+            if ( sourceFolder.equals( outputFolder ) ) {
+                outputFolder = outputFolder + File.separator + "site";
+            }
+            Spike lSpike = new Spike( sourceFolder, outputFolder, outputDelete );
 
-			FilenameFilter lFilenameFilter = new FilenameFilter() {
+            System.out.println( "Processing Posts and Layouts ..." );
+            lSpike.runProcess();
 
-				public boolean accept(File dir, String name) {
-					return !name.startsWith("_")
-							&& //
-							!outputFolder.substring(
-									outputFolder.lastIndexOf(File.separatorChar) + 1).equals(name)
-							&& //
-							!name.startsWith(".");
-				}
-			};
+            FilenameFilter lFilenameFilter = new FilenameFilter() {
 
-			System.out.println("Copying ressources files & directories...");
-			FileUtils.copyFolder(sourceFolder, outputFolder, lFilenameFilter);
+                public boolean accept( File dir, String name ) {
+                    return !name.startsWith( "_" ) && //
+                        !outputFolder.substring( outputFolder.lastIndexOf( File.separatorChar ) + 1 ).equals( name ) && //
+                        !name.startsWith( "." );
+                }
+            };
 
-			System.out
-					.println("Spike - success in " + (System.currentTimeMillis() - start) + " ms");
-			if (server) {
-				lSpike.initServer();
-			}
+            System.out.println( "Copying ressources files & directories..." );
+            FileUtils.copyFolder( sourceFolder, outputFolder, lFilenameFilter );
 
-			if (keepAlive) {
-				Timer t = new Timer();
-				t.schedule(new SpikeDirectoryWatcher(lSpike), 0, 1 * 1000);
-			}
+            System.out.println( "Spike - success in " + ( System.currentTimeMillis() - start ) + " ms" );
+            if ( server ) {
+                lSpike.initServer();
+            }
 
-			if (server || keepAlive) {
-				System.out.println("Hit Enter to stop.");
-				System.in.read();
-			}
-			System.exit(0);
+            if ( keepAlive ) {
+                Timer t = new Timer();
+                t.schedule( new SpikeDirectoryWatcher( lSpike ), 0, 1 * 1000 );
+            }
 
-		} catch (IOException e) {
-			handleException(e);
-		} catch (TemplateException e) {
-			handleException(e);
-		} catch (Throwable th) {
-			log.log(Level.SEVERE, th.getMessage());
-			System.exit(1);
-		}
-	}
+            if ( server || keepAlive ) {
+                System.out.println( "Hit Enter to stop." );
+                System.in.read();
+            }
+            System.exit( 0 );
 
-	private static void handleException(Exception pEx) {
-		log.log(Level.SEVERE, pEx.getClass().getName(), pEx);
-		System.err.println(pEx.getClass().getName() + pEx.getMessage());
-		System.exit(1);
-	}
+        }
+        catch ( IOException e ) {
+            handleException( e );
+        }
+        catch ( TemplateException e ) {
+            handleException( e );
+        }
+        catch ( Throwable th ) {
+            log.log( Level.SEVERE, th.getMessage() );
+            System.exit( 1 );
+        }
+    }
 
-	private static void readDefaults() throws IOException {
-		Properties prop = new Properties();
+    private static void handleException( Exception pEx ) {
+        log.log( Level.SEVERE, pEx.getClass().getName(), pEx );
+        System.err.println( pEx.getClass().getName() + pEx.getMessage() );
+        System.exit( 1 );
+    }
 
-		// Load the property file
-		prop.load(Main.class.getResourceAsStream("/config.properties"));
+    private static void readDefaults() throws IOException {
+        Properties prop = new Properties();
 
-		// Get values
-		if (isNulOrBlank(sourceFolder)) {
-			sourceFolder = prop.getProperty("source");
-		}
-		if (isNulOrBlank(outputFolder)) {
-			outputFolder = prop.getProperty("output");
-		}
-	}
+        // Load the property file
+        prop.load( Main.class.getResourceAsStream( "/config.properties" ) );
 
-	private static void printParameters() {
-		System.out.println("Source folder --- " + sourceFolder);
-		System.out.println("Output folder --- " + outputFolder);
-		System.out.println("KeepAlive --- " + keepAlive);
-		System.out.println("Server --- " + server);
-	}
+        // Get values
 
-	private static boolean isNulOrBlank(String pString) {
-		return pString == null || pString.trim().length() == 0;
-	}
+        if ( isNulOrBlank( sourceFolder ) ) {
+            sourceFolder = prop.getProperty( "source" );
+
+        }
+        else {
+            if ( isNulOrBlank( outputFolder ) ) {
+                outputFolder = sourceFolder;
+            }
+        }
+
+        if ( isNulOrBlank( outputFolder ) ) {
+            outputFolder = prop.getProperty( "output" );
+        }
+    }
+
+    private static void printParameters() {
+        System.out.println( "Source folder --- " + sourceFolder );
+        System.out.println( "Output folder --- " + outputFolder );
+        System.out.println( "KeepAlive --- " + keepAlive );
+        System.out.println( "Server --- " + server );
+    }
+
+    private static boolean isNulOrBlank( String pString ) {
+        return pString == null || pString.trim().length() == 0;
+    }
 
 }
