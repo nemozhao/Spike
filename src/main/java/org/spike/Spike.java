@@ -154,6 +154,14 @@ public class Spike {
 				System.out.println("Error reading File" + lFile.getAbsolutePath() + " :"
 						+ e.getMessage());
 				log.log(Level.WARNING, "Error reading File", e);
+			} catch (TemplateException e) {
+				System.out.println("Error process file " + lFile.getAbsolutePath() + " :"
+						+ e.getMessage());
+				log.log(Level.WARNING, "Error reading File", e);
+			} catch (InterruptedException e) {
+				System.out.println("Error process file " + lFile.getAbsolutePath() + " :"
+						+ e.getMessage());
+				log.log(Level.WARNING, "Error reading File", e);
 			}
 		}
 
@@ -197,8 +205,9 @@ public class Spike {
 	 * @param pFile
 	 * @return
 	 * @throws FileNotFoundException
+	 * @throws InterruptedException
 	 */
-	private Post getFromCache(File pFile) throws FileNotFoundException {
+	private Post getFromCache(File pFile) throws FileNotFoundException, InterruptedException {
 		String lFileName = pFile.getName();
 		if (cachedPosts.containsKey(lFileName)) {
 			return cachedPosts.get(lFileName);
@@ -383,22 +392,42 @@ public class Spike {
 		return new Feed(title, link, description, language, copyright, pubdate);
 	}
 
+	/**
+	 * Reads Yaml header and init Post
+	 * 
+	 * @param pFile
+	 * @param pHeader
+	 * @return
+	 * @throws IllegalArgumentException
+	 * @throws InterruptedException
+	 */
 	@SuppressWarnings("unchecked")
-	private final static void readYamlHeader(Post pPost, final String pHeader) {
-		Map<String, Object> lLoad = (Map<String, Object>) new Yaml().load(pHeader);
+	private final static Post readYamlHeader(File pFile, final String pHeader)
+			throws IllegalArgumentException, InterruptedException {
+		try {
+			Post pPost = new Post();
+			Map<String, Object> lLoad = (Map<String, Object>) new Yaml().load(pHeader);
 
-		pPost.setTitle((String) lLoad.get(SpikeCst.TITLE));
-		pPost.setCategory((String) lLoad.get(SpikeCst.CATEGORY));
-		Object lTags = lLoad.get(SpikeCst.TAGS);
-		if (lTags != null) {
-			pPost.getTags().addAll((List<String>) lTags);
+			pPost.setTitle((String) lLoad.get(SpikeCst.TITLE));
+			pPost.setCategory((String) lLoad.get(SpikeCst.CATEGORY));
+			Object lTags = lLoad.get(SpikeCst.TAGS);
+			if (lTags != null) {
+				pPost.getTags().addAll((List<String>) lTags);
+			}
+			pPost.setSource((String) lLoad.get(SpikeCst.SRC));
+			return pPost;
+		} catch (Throwable th) {
+			System.out.println("Error reading header of  file " + pFile.getAbsolutePath() + " :"
+					+ th.getMessage());
+			log.log(Level.WARNING, "Error reading File", th);
+			throw new InterruptedException("Header error");
 		}
-		pPost.setSource((String) lLoad.get(SpikeCst.SRC));
+
 	}
 
 	private static Post readFile(final File pFile, final String pExtension)
-			throws FileNotFoundException {
-		Post lPost = new Post();
+			throws FileNotFoundException, InterruptedException {
+		Post lPost = null;
 		Scanner lScanner = new Scanner(pFile, "UTF-8");
 		lScanner.useDelimiter(delimiterPtrn);
 		int i = 1;
@@ -407,7 +436,7 @@ public class Spike {
 			String lNext = lScanner.next().trim();
 			if (i == 1) {
 				log.fine("reading yaml header of file: " + pFile.getName());
-				readYamlHeader(lPost, lNext);
+				lPost = readYamlHeader(pFile, lNext);
 				i += 1;
 				continue;
 			}

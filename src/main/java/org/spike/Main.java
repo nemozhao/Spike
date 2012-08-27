@@ -141,7 +141,7 @@ public class Main {
 
 	private static void handleException(Exception pEx) {
 		log.log(Level.SEVERE, pEx.getClass().getName(), pEx);
-		System.out.println(pEx.getClass().getName() + pEx.getMessage());
+		System.err.println(pEx.getClass().getName() + pEx.getMessage());
 		System.exit(1);
 	}
 
