@@ -64,12 +64,14 @@ public class Main {
 
     /** Specify the correct parameters to use the class properly */
     public static final void usage() {
-        System.out.println( "Spike Parameters: -source -output -keepAlive -server" );
+        System.out.println( "Spike Parameters: -source -output -keepAlive -server -outputDelete" );
         System.out.println( "-source : Path to Source containing folders _layout and _posts (eg. C:/My/Path )" );
         System.out.println( "Default is set to currentPath/_raw \n" );
         System.out
             .println( "-output : Path to output source  (eg. C:/My/Path/Output ) \n Tous les fichiers contenus dans -source seront copiés également" );
         System.out.println( "Default is set to currentPath/_raw \n" );
+        System.out.println( "-outputDelete : outputfolder is delete before running process. use with caution if already outputfolder exists" );
+        System.out.println( "Default is set to false \n" );
         System.out
             .println( "-keepAlive : Keep processing alive. Will relaunch process if a file modification is detected" );
         System.out.println( "Default is false\n" );
