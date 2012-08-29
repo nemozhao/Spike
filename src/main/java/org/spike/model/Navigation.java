@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.spike.model;
 
@@ -79,6 +79,7 @@ public class Navigation {
 
 	}
 
+	@Deprecated
 	public void buildArchiveFromList(List<Post> pPosts) {
 		archiveMap.clear();
 

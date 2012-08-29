@@ -51,8 +51,10 @@ public class Spike {
     private static final String MD2_EXT = "markdown";
     private static final int POST_PER_PAGE = 10;
     private static final String SRC_TEMPLATE_FOLDER = "_layouts";
-    private static final String POSTS_FOLDER = "posts";
-    private static final String SRC_POSTS_FOLDER = "_" + POSTS_FOLDER;
+    private static final String POSTS = "posts";
+    private static final String SRC_POSTS_FOLDER = "_" + POSTS;
+
+    private static final String URL_SEPARATOR = "/";
 
     private static String output;
     private static String sourcePath;
@@ -243,7 +245,7 @@ public class Spike {
         File lPostFile = new File( lPostDirectoryUrl );
         try {
             SimpleHash postHash = new SimpleHash();
-            postHash.put( POSTS_FOLDER, pPost );
+            postHash.put( POSTS, pPost );
             postHash.put( "allCategories", Navigation.getCategoriesMap().keySet() );
             postHash.put( "allTags", Navigation.getTagsMap().keySet() );
             log.fine( "Creating file " + lPostDirectoryUrl );
@@ -264,7 +266,7 @@ public class Spike {
         Site lSite = new Site();
         lSite.getPosts().addAll( lPosts );
         SimpleHash root = new SimpleHash();
-        root.put( "paginator", SpikeTools.getPaginator( null, File.separator + "Page1" ) );
+        root.put( "paginator", SpikeTools.getPaginator( null, URL_SEPARATOR + "Page1" ) );
         root.put( "allCategories", Navigation.getCategoriesMap().keySet() );
         root.put( "allTags", Navigation.getTagsMap().keySet() );
         root.put( "site", lSite );
@@ -298,24 +300,24 @@ public class Spike {
             List<Post> subList = lPosts.subList( i * POST_PER_PAGE, i * POST_PER_PAGE + POST_PER_PAGE );
 
             Page lPage = new Page();
-            lPage.setUrl( File.separator + "Page" + i );
+            lPage.setUrl( URL_SEPARATOR + "Page" + i );
             lPage.setPosts( subList );
             // premier index
             Paginator lPaginator = null;
             if ( i == 0 ) {
-                lPaginator = SpikeTools.getPaginator( null, File.separator + "Page" + ( i + 1 ) );
+                lPaginator = SpikeTools.getPaginator( null, URL_SEPARATOR + "Page" + ( i + 1 ) );
             }
             else {
                 if ( i == lNumberofPage - 1 ) {
-                    lPaginator = SpikeTools.getPaginator( File.separator + "Page" + ( i - 1 ), null );
+                    lPaginator = SpikeTools.getPaginator( URL_SEPARATOR + "Page" + ( i - 1 ), null );
                 }
                 else {
                     if ( i == 1 ) {
-                        lPaginator = SpikeTools.getPaginator( File.separator + "index.html", File.separator + "Page"
+                        lPaginator = SpikeTools.getPaginator( URL_SEPARATOR + "index.html", URL_SEPARATOR + "Page"
                             + ( i + 1 ) );
                     }
                     else {
-                        lPaginator = SpikeTools.getPaginator( File.separator + "Page" + ( i - 1 ), File.separator
+                        lPaginator = SpikeTools.getPaginator( URL_SEPARATOR + "Page" + ( i - 1 ), URL_SEPARATOR
                             + "Page" + ( i + 1 ) );
                     }
                 }
@@ -362,15 +364,15 @@ public class Spike {
 
     private String buildPostUrl( String lFilePath, Calendar lCalendar ) {
         StringBuilder lStringBuilder = new StringBuilder();
-        lStringBuilder.append( File.separator );
+        lStringBuilder.append( URL_SEPARATOR );
         lStringBuilder.append( lCalendar.get( Calendar.YEAR ) );
-        lStringBuilder.append( File.separator );
+        lStringBuilder.append( URL_SEPARATOR );
         lStringBuilder.append( lCalendar.get( Calendar.MONTH ) + 1 );
-        lStringBuilder.append( File.separator );
+        lStringBuilder.append( URL_SEPARATOR );
         lStringBuilder.append( lCalendar.get( Calendar.DAY_OF_MONTH ) );
-        lStringBuilder.append( File.separator );
+        lStringBuilder.append( URL_SEPARATOR );
         lStringBuilder.append( lFilePath );
-        lStringBuilder.append( File.separator );
+        lStringBuilder.append( URL_SEPARATOR );
         return lStringBuilder.toString();
     }
 
