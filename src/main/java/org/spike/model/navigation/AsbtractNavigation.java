@@ -1,22 +1,22 @@
 /**
- * 
+ *
  */
 package org.spike.model.navigation;
 
 /**
  * @author mikomatic
- * 
+ *
  */
 public abstract class AsbtractNavigation {
 
-	public AsbtractNavigation(String pTitle, String pUrl) {
+	public AsbtractNavigation(final String pTitle, final String pUrl) {
 		super();
 		this.title = pTitle;
 		this.url = pUrl;
 	}
 
-	private String title;
-	private String url;
+	private final String title;
+	private final String url;
 
 	public String getTitle() {
 		return title;

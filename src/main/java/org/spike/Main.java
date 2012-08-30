@@ -84,7 +84,7 @@ public class Main {
     /**
      * @param args
      */
-    public static void main( String[] args ) {
+    public static void main( final String[] args ) {
         System.out.println( "Spike static blog generator  Copyright (C) 2012 by Miguel Ortega \n" );
         try {
             long start = System.currentTimeMillis();

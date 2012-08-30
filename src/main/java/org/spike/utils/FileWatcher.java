@@ -9,10 +9,10 @@ import java.util.logging.Logger;
  */
 public class FileWatcher extends TimerTask {
 
-    private static Logger log = Logger.getLogger( FileWatcher.class.getName() );
+    private static final Logger log = Logger.getLogger( FileWatcher.class.getName() );
 
     private long timeStamp;
-    private File file;
+    private final File file;
 
     public FileWatcher( File file ) {
         this.file = file;
@@ -29,7 +29,7 @@ public class FileWatcher extends TimerTask {
         }
     }
 
-    private void onChange( File pFile ) {
-        log.info( "File Changed: "+pFile.getName() );
+    private void onChange( final File pFile ) {
+        log.info( "File Changed: " + pFile.getName() );
     }
 }

@@ -1,17 +1,17 @@
 /**
- * 
+ *
  */
 package org.spike.model.navigation;
 
 /**
  * @author mikomatic
- * 
+ *
  */
 public class PostNav extends AsbtractNavigation {
 
-	private String selector;
+	private final String selector;
 
-	public PostNav(String pTitle, String pUrl, String pSelector) {
+	public PostNav(final String pTitle,final  String pUrl,final String pSelector) {
 		super(pTitle, pUrl);
 		selector = pSelector;
 	}

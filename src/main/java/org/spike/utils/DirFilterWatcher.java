@@ -17,35 +17,34 @@ import java.io.FileFilter;
 
 /**
  * <code>DirFilterWatcher</code>
- * 
+ *
  * @author mikomatic
  */
 public class DirFilterWatcher implements FileFilter {
 
-	private String filter;
+    private final String filter;
 
-	private boolean isAccepted;
+    private boolean isAccepted;
 
-	public DirFilterWatcher() {
-		this.filter = "";
-	}
+    public DirFilterWatcher() {
+        this.filter = "";
+    }
 
-	public DirFilterWatcher(String filter) {
-		this.filter = filter;
-		isAccepted = true;
-	}
+    public DirFilterWatcher( final String filter ) {
+        this.filter = filter;
+        isAccepted = true;
+    }
 
-	public DirFilterWatcher(String filter, boolean isAccepted) {
-		this.filter = filter;
-		this.isAccepted = isAccepted;
-	}
+    public DirFilterWatcher( final String filter, final boolean isAccepted ) {
+        this.filter = filter;
+        this.isAccepted = isAccepted;
+    }
 
-	public boolean accept(File file) {
-		if ("".equals(filter)) {
-			return true;
-		}
-		return isAccepted ? file.getName().startsWith(filter) : !(file
-				.getName().startsWith(filter));
-	}
+    public boolean accept( final File file ) {
+        if ( "".equals( filter ) ) {
+            return true;
+        }
+        return isAccepted ? file.getName().startsWith( filter ) : !( file.getName().startsWith( filter ) );
+    }
 
 }

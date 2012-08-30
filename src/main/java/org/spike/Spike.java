@@ -188,7 +188,7 @@ public class Spike {
         log.info( "Process OK. Handled " + listOfFiles.length + " Posts." );
     }
 
-    private void processCategoryTemplate( Template pTemplateCategory ) throws TemplateException, IOException {
+    private void processCategoryTemplate( final Template pTemplateCategory ) throws TemplateException, IOException {
         File categoriesFolder = new File( output + File.separator + "categories" );
         categoriesFolder.mkdirs();
         SimpleHash categoriesHash = new SimpleHash();
@@ -209,7 +209,7 @@ public class Spike {
      * @throws FileNotFoundException
      * @throws InterruptedException
      */
-    private Post getFromCache( File pFile ) throws FileNotFoundException, InterruptedException {
+    private Post getFromCache( final File pFile ) throws FileNotFoundException, InterruptedException {
         String lFileName = pFile.getName();
         if ( cachedPosts.containsKey( lFileName ) ) {
             return cachedPosts.get( lFileName );
@@ -240,7 +240,7 @@ public class Spike {
 
     }
 
-    private void buildPost( Post pPost, Template lTemplatePost ) throws TemplateException {
+    private void buildPost( final Post pPost, final Template lTemplatePost ) throws TemplateException {
         String lPostDirectoryUrl = output + pPost.getUrl() + "index." + HTML_EXT;
         File lPostFile = new File( lPostDirectoryUrl );
         try {
@@ -262,7 +262,7 @@ public class Spike {
         }
     }
 
-    private Site buildIndex( List<Post> lPosts, Template pTemplate ) throws TemplateException, IOException {
+    private Site buildIndex( final List<Post> lPosts, final Template pTemplate ) throws TemplateException, IOException {
         Site lSite = new Site();
         lSite.getPosts().addAll( lPosts );
         SimpleHash root = new SimpleHash();
@@ -276,8 +276,8 @@ public class Spike {
         return lSite;
     }
 
-    private void buildRssFeed( Feed lRssFeeder ) {
-        File XmlFolder = new File( output + File.separator + "feed" );
+    private void buildRssFeed( final Feed lRssFeeder ) {
+        final File XmlFolder = new File( output + File.separator + "feed" );
         XmlFolder.mkdirs();
         // Now write the file
         RSSFeedWriter writer = new RSSFeedWriter( lRssFeeder, output + File.separator + "feed" + File.separator
@@ -291,7 +291,7 @@ public class Spike {
         }
     }
 
-    private void processPagination( List<Post> lPosts, Template lTemplateBase ) throws TemplateException, IOException {
+    private void processPagination( final List<Post> lPosts, final Template lTemplateBase ) throws TemplateException, IOException {
         int lNumberofPage = lPosts.size() / POST_PER_PAGE;
         for ( int i = 0 ; i < lNumberofPage ; i++ ) {
             if ( i == 0 ) {
@@ -340,7 +340,7 @@ public class Spike {
         }
     }
 
-    private void processArchiveTemplate( Template lTemplateArchive ) throws TemplateException, IOException {
+    private void processArchiveTemplate( final Template lTemplateArchive ) throws TemplateException, IOException {
         File archiveFolder = new File( output + File.separator + "archive" );
         archiveFolder.mkdirs();
         SimpleHash archiveHash = new SimpleHash();
@@ -352,7 +352,7 @@ public class Spike {
         lTemplateArchive.process( archiveHash, lArchiveWriter );
     }
 
-    private void addFeedItem( Post post ) {
+    private void addFeedItem( final Post post ) {
         FeedItem feed = new FeedItem();
         feed.setTitle( post.getTitle() );
         feed.setDescription( post.getContent() + post.getTags() );
@@ -362,7 +362,7 @@ public class Spike {
         rssFeeder.getMessages().add( feed );
     }
 
-    private String buildPostUrl( String lFilePath, Calendar lCalendar ) {
+    private String buildPostUrl( final String lFilePath, final Calendar lCalendar ) {
         StringBuilder lStringBuilder = new StringBuilder();
         lStringBuilder.append( URL_SEPARATOR );
         lStringBuilder.append( lCalendar.get( Calendar.YEAR ) );

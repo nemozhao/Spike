@@ -8,16 +8,16 @@ import java.util.List;
  */
 public class Feed {
 
-	final String title;
-	final String link;
-	final String description;
-	final String language;
-	final String copyright;
-	final String pubDate;
-	final List<FeedItem> entries = new ArrayList<FeedItem>();
+	private final String title;
+	private final String link;
+	private final String description;
+	private final String language;
+	private final String copyright;
+	private final String pubDate;
+	private final List<FeedItem> entries = new ArrayList<FeedItem>();
 
-	public Feed(String title, String link, String description, String language,
-			String copyright, String pubDate) {
+	public Feed(final String title, final String link, final String description, final String language,
+	    final String copyright, final String pubDate) {
 		this.title = title;
 		this.link = link;
 		this.description = description;

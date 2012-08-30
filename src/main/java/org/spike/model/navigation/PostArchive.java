@@ -1,35 +1,35 @@
 /**
- * 
+ *
  */
 package org.spike.model.navigation;
 
 /**
  * @author mikomatic
- * 
+ *
  */
 public class PostArchive extends AsbtractNavigation {
 
-	private String year;
-	private String month;
-	private String dayOfMonth;
+    private final String year;
+    private final String month;
+    private final String dayOfMonth;
 
-	public String getYear() {
-		return year;
-	}
+    public String getYear() {
+        return year;
+    }
 
-	public String getMonth() {
-		return month;
-	}
+    public String getMonth() {
+        return month;
+    }
 
-	public String getDayOfMonth() {
-		return dayOfMonth;
-	}
+    public String getDayOfMonth() {
+        return dayOfMonth;
+    }
 
-	public PostArchive(String pTitle, String pUrl, String pYear, String pMonth, String pDayOfMonth) {
-		super(pTitle, pUrl);
-		this.year = pYear;
-		this.month = pMonth;
-		this.dayOfMonth = pDayOfMonth;
-	}
+    public PostArchive( final String pTitle, final String pUrl, final String pYear, final String pMonth, final String pDayOfMonth ) {
+        super( pTitle, pUrl );
+        this.year = pYear;
+        this.month = pMonth;
+        this.dayOfMonth = pDayOfMonth;
+    }
 
 }
