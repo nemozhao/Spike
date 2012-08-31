@@ -35,7 +35,7 @@ public class SpikeDirectoryWatcher extends DirectoryWatcher {
 
 		try {
 			File lFile = new File(spike.getSourcePath());
-			// C'est un fichier liÃ© au process. Il faut le relance
+			// C'est un fichier lié au process. Il faut le relance
 			if (pFilePathName.replace(lFile.getAbsolutePath() + File.separator, "").startsWith("_")) {
 				System.out.println("Relaunching spike process...please wait");
 				spike.runProcess();

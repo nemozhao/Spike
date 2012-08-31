@@ -94,7 +94,7 @@ public class Main {
             printParameters();
 
             if ( sourceFolder.equals( outputFolder ) ) {
-                outputFolder = outputFolder + File.separator + "site";
+                outputFolder = outputFolder + File.separator + "_site";
             }
             Spike lSpike = new Spike( sourceFolder, outputFolder, outputDelete );
 
@@ -104,8 +104,7 @@ public class Main {
             FilenameFilter lFilenameFilter = new FilenameFilter() {
 
                 public boolean accept( File dir, String name ) {
-                    return !name.startsWith( "_" ) && //
-                        !outputFolder.substring( outputFolder.lastIndexOf( File.separatorChar ) + 1 ).equals( name ) && //
+                    return !name.startsWith( "_" ) &&
                         !name.startsWith( "." );
                 }
             };
@@ -176,6 +175,7 @@ public class Main {
         System.out.println( "Output folder --- " + outputFolder );
         System.out.println( "KeepAlive --- " + keepAlive );
         System.out.println( "Server --- " + server );
+        System.out.println( "output Delete --- " + outputFolder );
     }
 
     private static boolean isNulOrBlank( String pString ) {
