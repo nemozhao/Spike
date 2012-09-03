@@ -59,7 +59,7 @@ public class Navigation {
             lPostByCat = new LinkedList<PostNav>();
             categoriesMap.put( lCategory, lPostByCat );
         }
-        categoriesMap.get( lCategory ).add( new PostNav( pPost.getTitle(), pPost.getUrl(), lCategory ) );
+        categoriesMap.get( lCategory ).add( new PostNav( pPost.getTitle(), pPost.getUrl(), pPost.getPublishedDate() ) );
 
         // Fill Category Map
         List<String> lTags = pPost.getTags();
@@ -70,7 +70,7 @@ public class Navigation {
                     lPostByTag = new LinkedList<PostNav>();
                     tagsMap.put( lTag, lPostByTag );
                 }
-                tagsMap.get( lTag ).add( new PostNav( pPost.getTitle(), pPost.getUrl(), lTag ) );
+                tagsMap.get( lTag ).add( new PostNav( pPost.getTitle(), pPost.getUrl(), pPost.getPublishedDate() ) );
             }
         }
 

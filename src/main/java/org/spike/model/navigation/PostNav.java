@@ -3,21 +3,27 @@
  */
 package org.spike.model.navigation;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 /**
  * @author mikomatic
  *
  */
 public class PostNav extends AsbtractNavigation {
 
-	private final String selector;
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat( "MMMMMMMM, yyyy", Locale.FRENCH );
 
-	public PostNav(final String pTitle,final  String pUrl,final String pSelector) {
-		super(pTitle, pUrl);
-		selector = pSelector;
-	}
+    private final String date;
 
-	public String getSelector() {
-		return selector;
-	}
+    public PostNav( final String pTitle, final String pUrl, final Date pDate ) {
+        super( pTitle, pUrl );
+        date = dateFormat.format( pDate );
+    }
+
+    public String getDate() {
+        return date;
+    }
 
 }
