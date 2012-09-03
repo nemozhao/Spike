@@ -3,16 +3,12 @@
  */
 package org.spike;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.spike.utils.FileUtils;
 
 import freemarker.template.TemplateException;
 
@@ -70,7 +66,8 @@ public class Main {
         System.out
             .println( "-output : Path to output source  (eg. C:/My/Path/Output ) \n Tous les fichiers contenus dans -source seront copiés également" );
         System.out.println( "Default is set to currentPath/_raw \n" );
-        System.out.println( "-outputDelete : outputfolder is delete before running process. use with caution if already outputfolder exists" );
+        System.out
+            .println( "-outputDelete : outputfolder is delete before running process. use with caution if already outputfolder exists" );
         System.out.println( "Default is set to false \n" );
         System.out
             .println( "-keepAlive : Keep processing alive. Will relaunch process if a file modification is detected" );
@@ -93,24 +90,16 @@ public class Main {
 
             printParameters();
 
+            boolean canCopySource = true;
             if ( sourceFolder.equals( outputFolder ) ) {
-                outputFolder = outputFolder + File.separator + "_site";
+                outputDelete = false;
+                canCopySource = false;
             }
-            Spike lSpike = new Spike( sourceFolder, outputFolder, outputDelete );
+            Spike lSpike = new Spike( sourceFolder, outputFolder, outputDelete, canCopySource );
 
             System.out.println( "Processing Posts and Layouts ..." );
             lSpike.runProcess();
-
-            FilenameFilter lFilenameFilter = new FilenameFilter() {
-
-                public boolean accept( File dir, String name ) {
-                    return !name.startsWith( "_" ) &&
-                        !name.startsWith( "." );
-                }
-            };
-
-            System.out.println( "Copying ressources files & directories..." );
-            FileUtils.copyFolder( sourceFolder, outputFolder, lFilenameFilter );
+            lSpike.copySource();
 
             System.out.println( "Spike - success in " + ( System.currentTimeMillis() - start ) + " ms" );
             if ( server ) {
@@ -175,7 +164,7 @@ public class Main {
         System.out.println( "Output folder --- " + outputFolder );
         System.out.println( "KeepAlive --- " + keepAlive );
         System.out.println( "Server --- " + server );
-        System.out.println( "output Delete --- " + outputFolder );
+        System.out.println( "output Delete --- " + outputDelete );
     }
 
     private static boolean isNulOrBlank( String pString ) {

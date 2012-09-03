@@ -58,7 +58,15 @@ public class Spike {
 
     private static String output;
     private static String sourcePath;
+    private static boolean canCopySoure;
 
+
+    private static FilenameFilter filenameFilter = new FilenameFilter() {
+
+        public boolean accept( File dir, String name ) {
+            return !name.startsWith( "_" ) && !name.startsWith( "." );
+        }
+    };
     private static Logger log = Logger.getLogger( Spike.class.getName() );
 
     private static boolean deleteOldOutput;
@@ -72,10 +80,11 @@ public class Spike {
     private Configuration templateConfig;
     private Map<String,Post> cachedPosts;;
 
-    public Spike( String pSource, String pOutput, boolean pDeleteOutput ) {
+    public Spike( String pSource, String pOutput, boolean pDeleteOutput, boolean pCanCopySource ) {
         output = pOutput;
         sourcePath = pSource;
         deleteOldOutput = pDeleteOutput;
+        canCopySoure = pCanCopySource;
     }
 
     public void runProcess() throws IOException, TemplateException {
@@ -468,6 +477,13 @@ public class Spike {
 
     public String getOutput() {
         return output;
+    }
+
+    public void copySource() throws IOException{
+        if ( canCopySoure ) {
+            System.out.println( "Copying ressources files & directories..." );
+            FileUtils.copyFolder( sourcePath, output, filenameFilter );
+        }
     }
 
     public String getSourcePath() {
