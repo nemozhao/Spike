@@ -1,7 +1,6 @@
 package org.spike.utils;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -25,7 +24,7 @@ public class FileUtils {
         // private constructor to preevent class instance
     }
 
-    private static void listFiles( final String pSrcPath, final FileFilter pFileFilter, final List<File> pFileList ) {
+    private static void listFiles( final String pSrcPath, final FilenameFilter pFileFilter, final List<File> pFileList ) {
         File[] listFiles = new File( pSrcPath ).listFiles( pFileFilter );
         if ( listFiles != null ) {
             for ( File file : listFiles ) {
@@ -40,7 +39,7 @@ public class FileUtils {
         }
     }
 
-    public static List<File> listFiles( final String pSrcPath, final FileFilter pFileFilter ) {
+    public static List<File> listFiles( final String pSrcPath, final FilenameFilter pFileFilter ) {
         List<File> lFileList = new ArrayList<File>();
         listFiles( pSrcPath, pFileFilter, lFileList );
         return lFileList;

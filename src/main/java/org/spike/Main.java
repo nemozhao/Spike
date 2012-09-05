@@ -90,12 +90,7 @@ public class Main {
 
             printParameters();
 
-            boolean canCopySource = true;
-            if ( sourceFolder.equals( outputFolder ) ) {
-                outputDelete = false;
-                canCopySource = false;
-            }
-            Spike lSpike = new Spike( sourceFolder, outputFolder, outputDelete, canCopySource );
+            Spike lSpike = new Spike( sourceFolder, outputFolder, outputDelete, true );
 
             System.out.println( "Processing Posts and Layouts ..." );
             lSpike.runProcess();
@@ -108,7 +103,7 @@ public class Main {
 
             if ( keepAlive ) {
                 Timer t = new Timer();
-                t.schedule( new SpikeDirectoryWatcher( lSpike ), 0, 1 * 1000 );
+                t.schedule( new SpikeDirectoryWatcher( lSpike ), 0, 3 * 1000 );
             }
 
             if ( server || keepAlive ) {

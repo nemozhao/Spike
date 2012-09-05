@@ -60,7 +60,6 @@ public class Spike {
     private static String sourcePath;
     private static boolean canCopySoure;
 
-
     private static FilenameFilter filenameFilter = new FilenameFilter() {
 
         public boolean accept( File dir, String name ) {
@@ -85,6 +84,15 @@ public class Spike {
         sourcePath = pSource;
         deleteOldOutput = pDeleteOutput;
         canCopySoure = pCanCopySource;
+
+        if ( isSameInputOutPut() ) {
+            deleteOldOutput = false;
+            canCopySoure = false;
+        }
+        else {
+            deleteOldOutput = pDeleteOutput;
+            canCopySoure = pCanCopySource;
+        }
     }
 
     public void runProcess() throws IOException, TemplateException {
@@ -479,11 +487,15 @@ public class Spike {
         return output;
     }
 
-    public void copySource() throws IOException{
+    public void copySource() throws IOException {
         if ( canCopySoure ) {
             System.out.println( "Copying ressources files & directories..." );
             FileUtils.copyFolder( sourcePath, output, filenameFilter );
         }
+    }
+
+    public boolean isSameInputOutPut(){
+        return output.equals( sourcePath );
     }
 
     public String getSourcePath() {
