@@ -266,9 +266,10 @@ public class Spike {
             postHash.put( "allCategories", Navigation.getCategoriesMap().keySet() );
             postHash.put( "allTags", Navigation.getTagsMap().keySet() );
             log.fine( "Creating file " + lPostDirectoryUrl );
-            if ( !lPostFile.getParentFile().exists() ) {
-                lPostFile.getParentFile().mkdirs();
+            if ( lPostFile.getParentFile().exists() ) {
+                FileUtils.deleteFolder( lPostFile.getParentFile().getAbsolutePath() );
             }
+            lPostFile.getParentFile().mkdirs();
             lPostFile.createNewFile();
             OutputStreamWriter lPostFileW = new OutputStreamWriter( new FileOutputStream( lPostFile, false ), "UTF-8" );
             lTemplatePost.process( postHash, lPostFileW );
