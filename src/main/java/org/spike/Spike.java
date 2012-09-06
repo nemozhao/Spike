@@ -405,7 +405,7 @@ public class Spike {
         String title = "Mike's blog";
         String description = "Blogging about software, dance, movies, life, and every thing else in between. Mexican curious in french disguise";
         String language = "fr";
-        String link = "http://www.mikomatic.com";
+        String link = "http://www.elmike.net";
         Date creationDate = new Date();
         SimpleDateFormat date_format = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss" );
         String pubdate = date_format.format( creationDate );
