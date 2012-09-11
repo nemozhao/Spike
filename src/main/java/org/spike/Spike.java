@@ -374,8 +374,8 @@ public class Spike {
         FeedItem feed = new FeedItem();
         feed.setTitle( post.getTitle() );
         feed.setDescription( post.getContent() + post.getTags() );
-        feed.setGuid( post.getUrl() );
-        feed.setLink( post.getUrl() );
+        feed.setGuid(rssFeeder.getLink()+ post.getUrl() );
+        feed.setLink(rssFeeder.getLink()+ post.getUrl() );
         feed.setPubDate( post.getPublishedDate() );
         rssFeeder.getMessages().add( feed );
     }
