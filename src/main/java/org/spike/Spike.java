@@ -123,7 +123,7 @@ public class Spike {
         FilenameFilter lPostsFilter = new FilenameFilter() {
 
             public boolean accept( File dir, String name ) {
-                return name.matches( "^.*((\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d))-.+\\..+$" ) && !name.startsWith( "." );
+                return name.matches( "^((\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d))-.+\\..+$" ) && !name.startsWith( "." );
             }
         };
         File[] listOfFiles = folder.listFiles( lPostsFilter );
