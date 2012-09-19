@@ -115,9 +115,11 @@ public class Main {
         }
         catch ( IOException e ) {
             handleException( e );
+            System.exit( 1 );
         }
         catch ( TemplateException e ) {
             handleException( e );
+            System.exit( 1 );
         }
         catch ( Throwable th ) {
             log.log( Level.SEVERE, th.getMessage() );
