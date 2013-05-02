@@ -9,9 +9,9 @@ import java.util.logging.LogRecord;
 
 public class SpikeLoggerFormatter extends Formatter {
 
-	private Date dat = new Date();
+	private final Date dat = new Date();
 	private final static String dateformat = "{0,date,short} {0,time}";
-	private Object args[] = new Object[1];
+	private final Object args[] = new Object[1];
 
 	private MessageFormat formatter;
 
@@ -40,6 +40,7 @@ public class SpikeLoggerFormatter extends Formatter {
 				pw.close();
 				sb.append(sw.toString());
 			} catch (Exception ex) {
+        //
 			}
 		}
 		return sb.toString();

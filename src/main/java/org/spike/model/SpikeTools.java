@@ -8,16 +8,15 @@ package org.spike.model;
  */
 public class SpikeTools {
 
-    private SpikeTools() {
-        // private constructor to prevent class instance
-    }
+  private SpikeTools() {
+    // private constructor to prevent class instance
+  }
 
-    public static Paginator getPaginator(final String pNextPage,
-            final String pBeforePage) {
-        Paginator lPaginator = new Paginator();
-        lPaginator.setBeforePage(pBeforePage);
-        lPaginator.setNextPage(pNextPage);
-        return lPaginator;
-    }
+  public static Paginator getPaginator(final String pNextPage, final String pBeforePage) {
+    Paginator lPaginator = new Paginator();
+    lPaginator.setBeforePage(pBeforePage);
+    lPaginator.setNextPage(pNextPage);
+    return lPaginator;
+  }
 
 }

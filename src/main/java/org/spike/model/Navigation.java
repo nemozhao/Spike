@@ -89,15 +89,6 @@ public class Navigation {
 
 	}
 
-	@Deprecated
-	public void buildArchiveFromList(List<Post> pPosts) {
-		archiveMap.clear();
-
-		for (Post lPost : pPosts) {
-			add(lPost);
-		}
-	}
-
 	public static Map<String, Map<String, Set<PostArchive>>> getArchiveMap() {
 		return archiveMap;
 	}
@@ -108,5 +99,5 @@ public class Navigation {
 
 	public static Map<String, Set<PostNav>> getTagsMap() {
 		return tagsMap;
-	};
+  }
 }

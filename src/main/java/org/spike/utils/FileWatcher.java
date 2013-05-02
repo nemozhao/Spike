@@ -21,10 +21,10 @@ public class FileWatcher extends TimerTask {
 
     @Override
     public void run() {
-        long timeStamp = file.lastModified();
+        long lTimeStamp = file.lastModified();
 
-        if ( this.timeStamp != timeStamp ) {
-            this.timeStamp = timeStamp;
+        if ( this.timeStamp != lTimeStamp ) {
+            this.timeStamp = lTimeStamp;
             onChange( file );
         }
     }

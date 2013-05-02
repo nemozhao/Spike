@@ -27,7 +27,7 @@ public class SpikeDirectoryWatcher extends TimerTask implements FilenameFilter {
 	private static Logger log = Logger.getLogger(SpikeDirectoryWatcher.class.getName());
 
 	private static Spike spike;
-	private File filesArray[];
+	private final File filesArray[];
 	private final Map<String, Long> dir = new HashMap<String, Long>();
 
 	private enum Action {
@@ -153,15 +153,15 @@ public class SpikeDirectoryWatcher extends TimerTask implements FilenameFilter {
 			if (pDir.getName().startsWith("_")) {
 				return true;
 			}
-			return false;
-		} else {
+    } else {
 			// On ne scanne jamais le fichier output qui risque d'�tre modifi�
 			// souvent
 			if (pDir.getAbsolutePath().equals(spike.getOutput())) {
 				return false;
 			}
 			return !pName.startsWith(".") ? true : false;
-		}
+    }
+    return false;
 	}
 
 }
