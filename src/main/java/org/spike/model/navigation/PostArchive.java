@@ -7,29 +7,31 @@ package org.spike.model.navigation;
  * @author mikomatic
  *
  */
-public class PostArchive extends AsbtractNavigation {
+public class PostArchive extends AbstractNavigation {
 
-    private final String year;
-    private final String month;
-    private final String dayOfMonth;
+  private final String year;
 
-    public String getYear() {
-        return year;
-    }
+  private final String month;
 
-    public String getMonth() {
-        return month;
-    }
+  private final String dayOfMonth;
 
-    public String getDayOfMonth() {
-        return dayOfMonth;
-    }
+  public String getYear() {
+    return year;
+  }
 
-    public PostArchive( final String pTitle, final String pUrl, final String pYear, final String pMonth, final String pDayOfMonth ) {
-        super( pTitle, pUrl );
-        this.year = pYear;
-        this.month = pMonth;
-        this.dayOfMonth = pDayOfMonth;
-    }
+  public String getMonth() {
+    return month;
+  }
 
+  public String getDayOfMonth() {
+    return dayOfMonth;
+  }
+
+  public PostArchive(final String pTitle, final String pUrl, final String pYear, final String pMonth,
+      final String pDayOfMonth) {
+    super(pTitle, pUrl);
+    this.year = pYear;
+    this.month = pMonth;
+    this.dayOfMonth = pDayOfMonth;
+  }
 }

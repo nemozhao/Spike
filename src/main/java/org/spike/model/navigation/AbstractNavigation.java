@@ -7,9 +7,9 @@ package org.spike.model.navigation;
  * @author mikomatic
  *
  */
-public abstract class AsbtractNavigation {
+public abstract class AbstractNavigation {
 
-	public AsbtractNavigation(final String pTitle, final String pUrl) {
+	public AbstractNavigation(final String pTitle, final String pUrl) {
 		super();
 		this.title = pTitle;
 		this.url = pUrl;

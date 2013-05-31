@@ -9,21 +9,19 @@ import java.util.Locale;
 
 /**
  * @author mikomatic
- *
  */
-public class PostNav extends AsbtractNavigation {
+public class PostNav extends AbstractNavigation {
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat( "MMMMMMMM, yyyy", Locale.FRENCH );
+  private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MMMMMMMM, yyyy", Locale.FRENCH);
 
-    private final String date;
+  private final String date;
 
-    public PostNav( final String pTitle, final String pUrl, final Date pDate ) {
-        super( pTitle, pUrl );
-        date = dateFormat.format( pDate );
-    }
+  public PostNav(final String pTitle, final String pUrl, final Date pDate) {
+    super(pTitle, pUrl);
+    date = dateFormat.format(pDate);
+  }
 
-    public String getDate() {
-        return date;
-    }
-
+  public String getDate() {
+    return date;
+  }
 }

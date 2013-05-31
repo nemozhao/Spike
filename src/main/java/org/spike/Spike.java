@@ -97,7 +97,6 @@ public class Spike {
     sourcePath = pSource;
     deleteOldOutput = pDeleteOutput;
     canCopySoure = pCanCopySource;
-
     if (isSameInputOutPut()) {
       deleteOldOutput = false;
       canCopySoure = false;
@@ -113,9 +112,7 @@ public class Spike {
     if (deleteOldOutput) {
       FileUtils.deleteFolder(output);
     }
-
     initTemplateConfig();
-
     Template lTemplateBase = templateConfig.getTemplate("index.ftl");
     Template lTemplatePost = templateConfig.getTemplate("post.ftl");
     Template lTemplateArchive = null;
@@ -130,68 +127,60 @@ public class Spike {
     } catch (IOException e) {
       log.warning("no category template found");
     }
-
     File folder = new File(sourcePath + File.separator + SRC_POSTS_FOLDER);
-    FilenameFilter lPostsFilter = new FilenameFilter() {
+    FilenameFilter postNameFilter = new FilenameFilter() {
 
       public boolean accept(File dir, String name) {
         return name.matches("^((\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d))-.+\\..+$") && !name.startsWith(".");
       }
     };
-    File[] listOfFiles = folder.listFiles(lPostsFilter);
-
+    File[] filteredFiles = folder.listFiles(postNameFilter);
     // Order by date descending
-    Arrays.sort(listOfFiles, new Comparator<File>() {
+    Arrays.sort(filteredFiles, new Comparator<File>() {
 
       public int compare(File o1, File o2) {
         return -o1.getName().compareTo(o2.getName());
       }
-
     });
-
-    cachedPosts = new LinkedHashMap<String, Post>(listOfFiles.length);
-    for (int i = 0; i < listOfFiles.length; i++) {
-      File lFile = listOfFiles[i];
+    cachedPosts = new LinkedHashMap<String, Post>(filteredFiles.length);
+    for (int i = 0; i < filteredFiles.length; i++) {
+      File lFile = filteredFiles[i];
       try {
         Post lPost = getFromCache(lFile);
-
         String lPrevious = null;
         String lNext = null;
         // Si premier index
         if (i == 0) {
-          lPrevious = listOfFiles[i + 1].getName();
-          cachedPosts.put(lPrevious, getFromCache(listOfFiles[i + 1]));
+          lPrevious = filteredFiles[i + 1].getName();
+          cachedPosts.put(lPrevious, getFromCache(filteredFiles[i + 1]));
           // dernier index
-        } else if (i == listOfFiles.length - 1) {
-          lNext = listOfFiles[i - 1].getName();
-          cachedPosts.put(lNext, getFromCache(listOfFiles[i - 1]));
+        } else if (i == filteredFiles.length - 1) {
+          lNext = filteredFiles[i - 1].getName();
+          cachedPosts.put(lNext, getFromCache(filteredFiles[i - 1]));
         } else {
-          lPrevious = listOfFiles[i + 1].getName();
-          cachedPosts.put(lPrevious, getFromCache(listOfFiles[i + 1]));
-          lNext = listOfFiles[i - 1].getName();
-          cachedPosts.put(lNext, getFromCache(listOfFiles[i - 1]));
+          lPrevious = filteredFiles[i + 1].getName();
+          cachedPosts.put(lPrevious, getFromCache(filteredFiles[i + 1]));
+          lNext = filteredFiles[i - 1].getName();
+          cachedPosts.put(lNext, getFromCache(filteredFiles[i - 1]));
         }
         lPost.setPrevious(cachedPosts.get(lPrevious));
         lPost.setNext(cachedPosts.get(lNext));
-
         addFeedItem(lPost);
         Navigation.add(lPost);
-
-        // Building post index.html
-        buildPost(lPost, lTemplatePost);
-
       } catch (FileNotFoundException e) {
         System.out.println("Error reading File" + lFile.getAbsolutePath() + " :" + e.getMessage());
-        log.log(Level.WARNING, "Error reading File", e);
-      } catch (TemplateException e) {
-        System.out.println("Error process file " + lFile.getAbsolutePath() + " :" + e.getMessage());
         log.log(Level.WARNING, "Error reading File", e);
       } catch (InterruptedException e) {
         System.out.println("Error process file " + lFile.getAbsolutePath() + " :" + e.getMessage());
         log.log(Level.WARNING, "Error reading File", e);
       } catch (Throwable e) {
-        System.out.println("Error creating File" + lFile.getAbsolutePath() + " :" + e.getMessage());
+        System.out.println("Error creating File " + lFile.getAbsolutePath() + " :" + e.getMessage());
       }
+    }
+
+    //Build post once all posts, tags, categories have been cached
+    for (Post post : cachedPosts.values()) {
+      buildPost(post, lTemplatePost);
     }
 
     // Building pagination
@@ -207,11 +196,11 @@ public class Spike {
     if (lTemplateArchive != null) {
       processArchiveTemplate(lTemplateArchive);
     }
+
     if (lTemplateCategory != null) {
       processCategoryTemplate(lTemplateCategory);
     }
-
-    System.out.println("Process OK. Handled " + listOfFiles.length + " Posts.");
+    System.out.println("Process OK. Handled " + filteredFiles.length + " Posts.");
   }
 
   private void processCategoryTemplate(final Template pTemplateCategory) throws TemplateException, IOException {
@@ -236,7 +225,6 @@ public class Spike {
    * @throws InterruptedException
    */
   private Post getFromCache(final File pFile) throws FileNotFoundException, InterruptedException {
-
     String lFileName = pFile.getName();
     if (cachedPosts.containsKey(lFileName)) {
       return cachedPosts.get(lFileName);
@@ -245,7 +233,6 @@ public class Spike {
     String[] lFileInfo = lSplit.split("\\.");
     String lFilePath = lFileInfo[0];
     String lExtension = lFileInfo[1];
-
     String lDate = lFileName.substring(0, 10);
     Calendar lCalendar = (Calendar) simpleDateFormat.getCalendar().clone();
     try {
@@ -253,12 +240,10 @@ public class Spike {
     } catch (ParseException e) {
       // Should Never Happen
     }
-
     Post lPost = readFile(pFile, lExtension);
     String lPostUrl = buildPostUrl(lFilePath, lCalendar);
     lPost.setUrl(lPostUrl.replace(" ", "_"));
     lPost.setPublishedDate(lCalendar.getTime());
-
     cachedPosts.put(lFileName, lPost);
     return lPost;
   }
@@ -320,7 +305,6 @@ public class Spike {
         continue;
       }
       List<Post> subList = lPosts.subList(i * POST_PER_PAGE, i * POST_PER_PAGE + POST_PER_PAGE);
-
       Page lPage = new Page();
       lPage.setUrl(URL_SEPARATOR + "Page" + i);
       lPage.setPosts(subList);
@@ -338,11 +322,9 @@ public class Spike {
             lPaginator = SpikeTools.getPaginator(URL_SEPARATOR + "Page" + (i - 1), URL_SEPARATOR + "Page" + (i + 1));
           }
         }
-
         String lPageDirectory = output + File.separator + "Page" + (i) + File.separator;
         File lPostDirectory = new File(lPageDirectory);
         lPostDirectory.mkdirs();
-
         Site lSubPosts = new Site();
         lSubPosts.getPosts().addAll(subList);
         SimpleHash root = new SimpleHash();
@@ -427,7 +409,6 @@ public class Spike {
     try {
       Post pPost = new Post();
       Map<String, Object> lLoad = (Map<String, Object>) new Yaml().load(pHeader);
-
       pPost.setTitle((String) lLoad.get(SpikeCst.TITLE));
       pPost.setCategory((String) lLoad.get(SpikeCst.CATEGORY));
       Object lTags = lLoad.get(SpikeCst.TAGS);
@@ -441,7 +422,6 @@ public class Spike {
       log.log(Level.WARNING, "Error reading File", th);
       throw new InterruptedException("Header error");
     }
-
   }
 
   private static Post readFile(final File pFile, final String pExtension) throws FileNotFoundException,
@@ -451,7 +431,6 @@ public class Spike {
     lScanner.useDelimiter(delimiterPtrn);
     int i = 1;
     String lContent = "";
-
     while (lScanner.hasNext()) {
       String lNext = lScanner.next().trim();
       if (i == 1) {
@@ -463,13 +442,11 @@ public class Spike {
       lContent += lNext;
     }
     lScanner.close();
-
     if (MD1_EXT.equals(pExtension) || MD2_EXT.equals(pExtension)) {
       lPost.setContent(mdProcessor.markdown(lContent));
     } else {
       lPost.setContent(lContent);
     }
-
     return lPost;
   }
 
@@ -501,5 +478,4 @@ public class Spike {
   public String getSourcePath() {
     return sourcePath;
   }
-
 }
