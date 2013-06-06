@@ -17,10 +17,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.spike.model.Feed;
 import org.spike.model.FeedItem;
 import org.spike.model.Navigation;
@@ -45,51 +44,30 @@ import freemarker.template.TemplateException;
  * @author mikomatic
  */
 public class Spike {
-
   private static final String HTML_EXT = "html";
-
   private static final String MD1_EXT = "md";
-
   private static final String MD2_EXT = "markdown";
-
   private static final int POST_PER_PAGE = 10;
-
   private static final String SRC_TEMPLATE_FOLDER = "_layouts";
-
   private static final String POSTS = "posts";
-
   private static final String SRC_POSTS_FOLDER = "_" + POSTS;
-
   private static final String URL_SEPARATOR = "/";
-
   private static String output;
-
   private static String sourcePath;
-
   private static boolean canCopySoure;
-
   private static FilenameFilter filenameFilter = new FilenameFilter() {
-
     public boolean accept(File dir, String name) {
       return !name.startsWith("_") && !name.startsWith(".");
     }
   };
-
-  private static Logger log = Logger.getLogger(Spike.class.getName());
-
+  private static Logger LOG = Logger.getLogger(Spike.class.getName());
   private static boolean deleteOldOutput;
-
   //get the line separator for the current platform
   private static Pattern delimiterPtrn = Pattern.compile("\\s*[-]{3}\\s*\\n");
-
   private static MarkdownProcessor mdProcessor = new MarkdownProcessor();
-
   private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
   private static Feed rssFeeder = initFeed();
-
   private Configuration templateConfig;
-
   private Map<String, Post> cachedPosts;
 
   public Spike(String pSource, String pOutput, boolean pDeleteOutput, boolean pCanCopySource) {
@@ -119,17 +97,16 @@ public class Spike {
     try {
       lTemplateArchive = templateConfig.getTemplate("archive.ftl");
     } catch (IOException e) {
-      log.warning("no archive template found");
+      LOG.warn("no archive template found", e);
     }
     Template lTemplateCategory = null;
     try {
       lTemplateCategory = templateConfig.getTemplate("category.ftl");
     } catch (IOException e) {
-      log.warning("no category template found");
+      LOG.warn("no category template found");
     }
     File folder = new File(sourcePath + File.separator + SRC_POSTS_FOLDER);
     FilenameFilter postNameFilter = new FilenameFilter() {
-
       public boolean accept(File dir, String name) {
         return name.matches("^((\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d))-.+\\..+$") && !name.startsWith(".");
       }
@@ -137,7 +114,6 @@ public class Spike {
     File[] filteredFiles = folder.listFiles(postNameFilter);
     // Order by date descending
     Arrays.sort(filteredFiles, new Comparator<File>() {
-
       public int compare(File o1, File o2) {
         return -o1.getName().compareTo(o2.getName());
       }
@@ -169,34 +145,28 @@ public class Spike {
         Navigation.add(lPost);
       } catch (FileNotFoundException e) {
         System.out.println("Error reading File" + lFile.getAbsolutePath() + " :" + e.getMessage());
-        log.log(Level.WARNING, "Error reading File", e);
+        LOG.warn("Error reading File", e);
       } catch (InterruptedException e) {
         System.out.println("Error process file " + lFile.getAbsolutePath() + " :" + e.getMessage());
-        log.log(Level.WARNING, "Error reading File", e);
+        LOG.warn("Error reading File", e);
       } catch (Throwable e) {
         System.out.println("Error creating File " + lFile.getAbsolutePath() + " :" + e.getMessage());
       }
     }
-
     //Build post once all posts, tags, categories have been cached
     for (Post post : cachedPosts.values()) {
       buildPost(post, lTemplatePost);
     }
-
     // Building pagination
     processPagination(new ArrayList<Post>(cachedPosts.values()), lTemplateBase);
-
     // Create Rss Feed
     buildRssFeed(rssFeeder);
-
     // Building Index.html
     buildIndex(new ArrayList<Post>(cachedPosts.values()), lTemplateBase);
-
     // Building archive page
     if (lTemplateArchive != null) {
       processArchiveTemplate(lTemplateArchive);
     }
-
     if (lTemplateCategory != null) {
       processCategoryTemplate(lTemplateCategory);
     }
@@ -256,7 +226,7 @@ public class Spike {
       postHash.put(POSTS, pPost);
       postHash.put("allCategories", Navigation.getCategoriesMap().keySet());
       postHash.put("allTags", Navigation.getTagsMap().keySet());
-      log.fine("Creating file " + lPostDirectoryUrl);
+      LOG.debug("Creating file " + lPostDirectoryUrl);
       if (lPostFile.getParentFile().exists()) {
         FileUtils.deleteFolder(lPostFile.getParentFile().getAbsolutePath());
       }
@@ -265,8 +235,7 @@ public class Spike {
       OutputStreamWriter lPostFileW = new OutputStreamWriter(new FileOutputStream(lPostFile, false), "UTF-8");
       lTemplatePost.process(postHash, lPostFileW);
     } catch (IOException e) {
-      System.out.println("Error creating File" + lPostFile + " :" + e.getMessage());
-      log.log(Level.WARNING, "Error creating File", e);
+      LOG.warn("Error creating File", e);
     }
   }
 
@@ -418,8 +387,7 @@ public class Spike {
       pPost.setSource((String) lLoad.get(SpikeCst.SRC));
       return pPost;
     } catch (Throwable th) {
-      System.out.println("Error reading header of  file " + pFile.getAbsolutePath() + " :" + th.getMessage());
-      log.log(Level.WARNING, "Error reading File", th);
+      LOG.error("Error reading File", th);
       throw new InterruptedException("Header error");
     }
   }
@@ -434,7 +402,7 @@ public class Spike {
     while (lScanner.hasNext()) {
       String lNext = lScanner.next().trim();
       if (i == 1) {
-        log.fine("reading yaml header of file: " + pFile.getName());
+        LOG.debug("reading yaml header of file: " + pFile.getName());
         lPost = readYamlHeader(pFile, lNext);
         i += 1;
         continue;
@@ -457,7 +425,7 @@ public class Spike {
       System.err.println("Couldn't start server:\n" + ioe);
       System.exit(-1);
     }
-    log.info("Listening on port " + 1337 + ".\n");
+    LOG.info("Listening on port " + 1337 + ".\n");
   }
 
   public String getOutput() {

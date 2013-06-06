@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.Timer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import freemarker.template.TemplateException;
 
@@ -17,7 +17,7 @@ import freemarker.template.TemplateException;
  *
  */
 public class Main {
-  private static Logger log = Logger.getLogger(Main.class.getName());
+  private static final Logger LOG = Logger.getLogger(Main.class.getName());
   private static String sourceFolder;
   private static String outputFolder;
   private static Boolean keepAlive;
@@ -100,14 +100,13 @@ public class Main {
     } catch (TemplateException e) {
       handleException(e);
     } catch (Throwable th) {
-      log.log(Level.SEVERE, th.getMessage());
+      LOG.error("Unexpected Error", th);
       System.exit(1);
     }
   }
 
   private static void handleException(Exception pEx) {
-    log.log(Level.SEVERE, pEx.getClass().getName(), pEx);
-    System.err.println(pEx.getClass().getName() + pEx.getMessage());
+    LOG.error("Oups, something went wrong", pEx);
     System.exit(1);
   }
 
