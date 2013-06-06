@@ -17,27 +17,18 @@ import freemarker.template.TemplateException;
  *
  */
 public class Main {
-
   private static Logger log = Logger.getLogger(Main.class.getName());
-
   private static String sourceFolder;
-
   private static String outputFolder;
-
   private static Boolean keepAlive;
-
   private static Boolean server;
-
   private static boolean outputDelete;
-
   private static HashMap<String, String> arguments;
 
   public static final void decodeArgs(String[] pArgs) {
-
     arguments = new HashMap<String, String>();
     // Scan the arguments
     for (int i = 0, iMax = pArgs.length; i < iMax; i++) {
-
       if (pArgs[i].startsWith("-")) {
         String lKey = pArgs[i].substring(1);
         String lValue = "";
@@ -48,18 +39,14 @@ public class Main {
         arguments.put(lKey, lValue);
       }
     }
-
     sourceFolder = arguments.get("source");
     outputFolder = arguments.get("output");
     keepAlive = arguments.get("keepAlive") != null ? true : false;
     server = arguments.get("server") != null ? true : false;
-
     outputDelete = arguments.get("outputDelete") != null ? true : false;
-
     if (arguments.get("help") != null) {
       usage();
     }
-
   }
 
   /** Specify the correct parameters to use the class properly */
@@ -90,31 +77,24 @@ public class Main {
       long start = System.currentTimeMillis();
       decodeArgs(args);
       readDefaults();
-
       printParameters();
-
       Spike lSpike = new Spike(sourceFolder, outputFolder, outputDelete, true);
-
       System.out.println("Processing Posts and Layouts ...");
       lSpike.runProcess();
       lSpike.copySource();
-
       System.out.println("Spike - success in " + (System.currentTimeMillis() - start) + " ms");
       if (server) {
         lSpike.initServer();
       }
-
       if (keepAlive) {
         Timer t = new Timer();
         t.schedule(new SpikeDirectoryWatcher(lSpike), 0, 3 * 1000);
       }
-
       if (server || keepAlive) {
         System.out.println("Hit Enter to stop.");
         System.in.read();
       }
       System.exit(0);
-
     } catch (IOException e) {
       handleException(e);
     } catch (TemplateException e) {
@@ -133,21 +113,17 @@ public class Main {
 
   private static void readDefaults() throws IOException {
     Properties prop = new Properties();
-
     // Load the property file
-    prop.load(Main.class.getResourceAsStream("/config.properties"));
-
+    ClassLoader cl = Thread.currentThread().getContextClassLoader();
+    prop.load(cl.getResourceAsStream("config.properties"));
     // Get values
-
     if (isNulOrBlank(sourceFolder)) {
       sourceFolder = prop.getProperty("source");
-
     } else {
       if (isNulOrBlank(outputFolder)) {
         outputFolder = sourceFolder;
       }
     }
-
     if (isNulOrBlank(outputFolder)) {
       outputFolder = prop.getProperty("output");
     }
@@ -164,5 +140,4 @@ public class Main {
   private static boolean isNulOrBlank(String pString) {
     return pString == null || pString.trim().length() == 0;
   }
-
 }
