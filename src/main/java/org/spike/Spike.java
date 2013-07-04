@@ -111,6 +111,10 @@ public class Spike {
         return name.matches("^((\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d))-.+\\..+$") && !name.startsWith(".");
       }
     };
+    if (!folder.exists()) {
+      LOG.error("the folder _posts should exist in source directory ");
+      throw new UnsupportedOperationException("Cannot build website without _posts directory");
+    }
     File[] filteredFiles = folder.listFiles(postNameFilter);
     // Order by date descending
     Arrays.sort(filteredFiles, new Comparator<File>() {
