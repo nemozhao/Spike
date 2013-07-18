@@ -1,54 +1,73 @@
 package org.spike.model;
 
 import java.util.List;
+import java.util.Map;
+
+import org.spike.SpikeCst;
 
 /**
- *
+ * 
  * <code>Page</code>
- *
+ * 
  * @author mikomatic
  */
 public class Page {
 
-    private String title;
+	private String title;
 
-    private String url;
+	private String url;
 
-    private String content = "";
+	private String content = "";
 
-    private List<Post> posts;
+	private String layout;
 
-    public String getTitle() {
-        return title;
-    }
+	private List<Post> posts;
 
-    public String getUrl() {
-        return url;
-    }
+	public Page() {
+	}
 
-    public String getContent() {
-        return content;
-    }
+	public Page(final Map<String, Object> aYamlProps) {
+		setTitle((String) aYamlProps.get(SpikeCst.TITLE));
+		setLayout((String) aYamlProps.get(SpikeCst.LAYOUT));
+	}
 
-    public void setTitle( String pTitle ) {
-        title = pTitle;
-    }
+	public String getTitle() {
+		return title;
+	}
 
-    public void setUrl( String pUrl ) {
-        url = pUrl;
-    }
+	public String getUrl() {
+		return url;
+	}
 
-    public void setContent( String pContent ) {
-        content = pContent;
-    }
+	public String getContent() {
+		return content;
+	}
 
+	public void setTitle(String pTitle) {
+		title = pTitle;
+	}
 
-    public List<Post> getPosts() {
-        return posts;
-    }
+	public void setUrl(String pUrl) {
+		url = pUrl;
+	}
 
+	public void setContent(String pContent) {
+		content = pContent;
+	}
 
-    public void setPosts( List<Post> pPosts ) {
-        posts = pPosts;
-    }
+	public List<Post> getPosts() {
+		return posts;
+	}
+
+	public void setPosts(List<Post> pPosts) {
+		posts = pPosts;
+	}
+
+	public String getLayout() {
+		return layout;
+	}
+
+	public void setLayout(String layout) {
+		this.layout = layout;
+	}
 }

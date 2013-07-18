@@ -17,6 +17,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Map;
+
+import org.spike.SpikeCst;
 
 /**
  * <code>Post</code>
@@ -42,6 +45,24 @@ public class Post {
 	private Post previous;
 
 	private Post next;
+
+	private String layout = "post";
+
+	public Post() {
+		//
+	}
+
+	@SuppressWarnings("unchecked")
+	public Post(final Map<String, Object> aYamlProps) {
+		setTitle((String) aYamlProps.get(SpikeCst.TITLE));
+		setCategory((String) aYamlProps.get(SpikeCst.CATEGORY));
+		setLayout((String) aYamlProps.get(SpikeCst.LAYOUT));
+		Object lTags = aYamlProps.get(SpikeCst.TAGS);
+		if (lTags != null) {
+			getTags().addAll((List<String>) lTags);
+		}
+		setSource((String) aYamlProps.get(SpikeCst.SRC));
+	}
 
 	public String getTitle() {
 		return title;
@@ -119,6 +140,14 @@ public class Post {
 
 	public void setNext(Post nextPost) {
 		this.next = nextPost;
+	}
+
+	public String getLayout() {
+		return layout;
+	}
+
+	public void setLayout(String layout) {
+		this.layout = layout;
 	}
 
 }
