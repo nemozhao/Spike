@@ -96,19 +96,6 @@ public class Spike {
 		}
 		initTemplateConfig();
 		Template lTemplateBase = templateConfig.getTemplate("index.ftl");
-		Template lTemplatePost = templateConfig.getTemplate("post.ftl");
-		Template lTemplateArchive = null;
-		try {
-			lTemplateArchive = templateConfig.getTemplate(archiveTemplateName);
-		} catch (IOException e) {
-			LOG.warn("no archive template found", e);
-		}
-		Template lTemplateCategory = null;
-		try {
-			lTemplateCategory = templateConfig.getTemplate("category.ftl");
-		} catch (IOException e) {
-			LOG.warn("no category template found");
-		}
 		File folder = new File(sourcePath + File.separator + SRC_POSTS_FOLDER);
 		FilenameFilter postNameFilter = new FilenameFilter() {
 			public boolean accept(File dir, String name) {
@@ -163,7 +150,7 @@ public class Spike {
 		}
 		// Build post once all posts, tags, categories have been cached
 		for (Post post : cachedPosts.values()) {
-			buildPost(post, lTemplatePost);
+			buildPost(post);
 		}
 		// Building pagination
 		processPagination(new ArrayList<Post>(cachedPosts.values()), lTemplateBase);
@@ -171,13 +158,6 @@ public class Spike {
 		buildRssFeed(rssFeeder);
 		// Building Index.html
 		buildIndex(new ArrayList<Post>(cachedPosts.values()), lTemplateBase);
-		// Building default pages
-		if (lTemplateArchive != null) {
-			processArchiveTemplate(lTemplateArchive);
-		}
-		if (lTemplateCategory != null) {
-			processCategoryTemplate(lTemplateCategory);
-		}
 		// Building custom pages
 		File pagesFolder = new File(sourcePath + File.separator + SRC_PAGES_FOLDER);
 		File[] pages = pagesFolder.listFiles();
@@ -210,11 +190,10 @@ public class Spike {
 
 		Page page = readPage(aPage, extension);
 		String templateName = page.getLayout() + "." + FTL_EXT;
-		if (templateName == null || templateName.trim().length() == 0
-				|| templateName.equals(archiveTemplateName)
-				|| templateName.equals(categoriesTemplateName)) {
+		if (templateName == null || templateName.trim().length() == 0) {
 			return;
 		}
+
 		try {
 			Template template = templateConfig.getTemplate(templateName);
 
@@ -223,6 +202,11 @@ public class Spike {
 			SimpleHash pageHash = new SimpleHash();
 			pageHash.put("allCategories", Navigation.getCategoriesMap().keySet());
 			pageHash.put("allTags", Navigation.getTagsMap().keySet());
+			if (templateName.equals(archiveTemplateName)) {
+				pageHash.put("archive", Navigation.getArchiveMap());
+			} else if (templateName.equals(categoriesTemplateName)) {
+				pageHash.put("categories", Navigation.getCategoriesMap());
+			}
 			pageHash.put("page", page);
 			OutputStreamWriter pageWriter = new OutputStreamWriter(new FileOutputStream(
 					pageFolder.getAbsolutePath() + File.separator + "index.html"), "UTF-8");
@@ -230,19 +214,6 @@ public class Spike {
 		} catch (IOException e) {
 			LOG.error("Template " + templateName + " was not found. Page was not built");
 		}
-	}
-
-	private void processCategoryTemplate(final Template pTemplateCategory)
-			throws TemplateException, IOException {
-		File categoriesFolder = new File(output + File.separator + "categories");
-		categoriesFolder.mkdirs();
-		SimpleHash categoriesHash = new SimpleHash();
-		categoriesHash.put("allCategories", Navigation.getCategoriesMap().keySet());
-		categoriesHash.put("allTags", Navigation.getTagsMap().keySet());
-		categoriesHash.put("categories", Navigation.getCategoriesMap());
-		OutputStreamWriter lArchiveWriter = new OutputStreamWriter(new FileOutputStream(
-				categoriesFolder.getAbsolutePath() + File.separator + "index.html"), "UTF-8");
-		pTemplateCategory.process(categoriesHash, lArchiveWriter);
 	}
 
 	/**
@@ -278,10 +249,14 @@ public class Spike {
 		return lPost;
 	}
 
-	private void buildPost(final Post pPost, final Template lTemplatePost) throws TemplateException {
+	private void buildPost(final Post pPost) throws TemplateException {
 		String lPostDirectoryUrl = output + pPost.getUrl() + "index." + HTML_EXT;
 		File lPostFile = new File(lPostDirectoryUrl);
 		try {
+
+			String templateName = pPost.getLayout() + "." + FTL_EXT;
+			Template template = templateConfig.getTemplate(templateName);
+
 			SimpleHash postHash = new SimpleHash();
 			postHash.put(POSTS, pPost);
 			postHash.put("allCategories", Navigation.getCategoriesMap().keySet());
@@ -294,7 +269,7 @@ public class Spike {
 			lPostFile.createNewFile();
 			OutputStreamWriter lPostFileW = new OutputStreamWriter(new FileOutputStream(lPostFile,
 					false), "UTF-8");
-			lTemplatePost.process(postHash, lPostFileW);
+			template.process(postHash, lPostFileW);
 		} catch (IOException e) {
 			LOG.warn("Error creating File", e);
 		}
@@ -372,19 +347,6 @@ public class Spike {
 				lTemplateBase.process(root, lPageW);
 			}
 		}
-	}
-
-	private void processArchiveTemplate(final Template lTemplateArchive) throws TemplateException,
-			IOException {
-		File archiveFolder = new File(output + File.separator + "archive");
-		archiveFolder.mkdirs();
-		SimpleHash archiveHash = new SimpleHash();
-		archiveHash.put("allCategories", Navigation.getCategoriesMap().keySet());
-		archiveHash.put("allTags", Navigation.getTagsMap().keySet());
-		archiveHash.put("archive", Navigation.getArchiveMap());
-		OutputStreamWriter lArchiveWriter = new OutputStreamWriter(new FileOutputStream(
-				archiveFolder.getAbsolutePath() + File.separator + "index.html", false), "UTF-8");
-		lTemplateArchive.process(archiveHash, lArchiveWriter);
 	}
 
 	private void addFeedItem(final Post post) {

@@ -56,7 +56,10 @@ public class Post {
 	public Post(final Map<String, Object> aYamlProps) {
 		setTitle((String) aYamlProps.get(SpikeCst.TITLE));
 		setCategory((String) aYamlProps.get(SpikeCst.CATEGORY));
-		setLayout((String) aYamlProps.get(SpikeCst.LAYOUT));
+		String lLayout = (String) aYamlProps.get(SpikeCst.LAYOUT);
+		if (lLayout != null && lLayout.trim().length() != 0) {
+			setLayout(lLayout);
+		}
 		Object lTags = aYamlProps.get(SpikeCst.TAGS);
 		if (lTags != null) {
 			getTags().addAll((List<String>) lTags);
