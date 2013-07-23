@@ -12,4 +12,5 @@ public interface SpikeCst {
 
 	String LAYOUT = "layout";
 
+	String DESCRIPTION = "description";
 }

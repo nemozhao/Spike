@@ -46,6 +46,8 @@ public class Post {
 
 	private Post next;
 
+	private String description;
+
 	private String layout = "post";
 
 	public Post() {
@@ -56,6 +58,7 @@ public class Post {
 	public Post(final Map<String, Object> aYamlProps) {
 		setTitle((String) aYamlProps.get(SpikeCst.TITLE));
 		setCategory((String) aYamlProps.get(SpikeCst.CATEGORY));
+		setDescription((String) aYamlProps.get(SpikeCst.DESCRIPTION));
 		String lLayout = (String) aYamlProps.get(SpikeCst.LAYOUT);
 		if (lLayout != null && lLayout.trim().length() != 0) {
 			setLayout(lLayout);
@@ -151,6 +154,14 @@ public class Post {
 
 	public void setLayout(String layout) {
 		this.layout = layout;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 }
