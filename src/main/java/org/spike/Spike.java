@@ -44,6 +44,7 @@ import freemarker.template.TemplateException;
  * @author mikomatic
  */
 public class Spike {
+	private static final String PAGE = "Page";
 	private static final String HTML_EXT = "html";
 	private static final String MD1_EXT = "md";
 	private static final String MD2_EXT = "markdown";
@@ -280,7 +281,8 @@ public class Spike {
 		Site lSite = new Site();
 		lSite.getPosts().addAll(lPosts);
 		SimpleHash root = new SimpleHash();
-		root.put("paginator", SpikeTools.getPaginator(null, URL_SEPARATOR + "Page1"));
+		root.put("paginator",
+				SpikeTools.getPaginator(null, URL_SEPARATOR + PAGE + URL_SEPARATOR + 1));
 		root.put("allCategories", Navigation.getCategoriesMap().keySet());
 		root.put("allTags", Navigation.getTagsMap().keySet());
 		root.put("site", lSite);
@@ -314,25 +316,28 @@ public class Spike {
 			List<Post> subList = lPosts.subList(i * POST_PER_PAGE, i * POST_PER_PAGE
 					+ POST_PER_PAGE);
 			Page lPage = new Page();
-			lPage.setUrl(URL_SEPARATOR + "Page" + i);
+			lPage.setUrl(URL_SEPARATOR + PAGE + URL_SEPARATOR + i);
 			lPage.setPosts(subList);
 			// premier index
 			Paginator lPaginator = null;
 			if (i == 0) {
-				lPaginator = SpikeTools.getPaginator(null, URL_SEPARATOR + "Page" + (i + 1));
+				lPaginator = SpikeTools.getPaginator(null, URL_SEPARATOR + PAGE + URL_SEPARATOR
+						+ (i + 1));
 			} else {
 				if (i == lNumberofPage - 1) {
-					lPaginator = SpikeTools.getPaginator(URL_SEPARATOR + "Page" + (i - 1), null);
+					lPaginator = SpikeTools.getPaginator(URL_SEPARATOR + PAGE + URL_SEPARATOR
+							+ (i - 1), null);
 				} else {
 					if (i == 1) {
 						lPaginator = SpikeTools.getPaginator(URL_SEPARATOR + "index.html",
-								URL_SEPARATOR + "Page" + (i + 1));
+								URL_SEPARATOR + PAGE + URL_SEPARATOR + (i + 1));
 					} else {
-						lPaginator = SpikeTools.getPaginator(URL_SEPARATOR + "Page" + (i - 1),
-								URL_SEPARATOR + "Page" + (i + 1));
+						lPaginator = SpikeTools.getPaginator(URL_SEPARATOR + PAGE + URL_SEPARATOR
+								+ (i - 1), URL_SEPARATOR + PAGE + URL_SEPARATOR + (i + 1));
 					}
 				}
-				String lPageDirectory = output + File.separator + "Page" + (i) + File.separator;
+				String lPageDirectory = output + File.separator + PAGE + File.separator + (i)
+						+ File.separator;
 				File lPostDirectory = new File(lPageDirectory);
 				lPostDirectory.mkdirs();
 				Site lSubPosts = new Site();
