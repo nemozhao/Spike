@@ -455,7 +455,10 @@ public class Spike {
 			String lNext = lScanner.next().trim();
 			if (i == 1) {
 				LOG.debug("reading yaml header of file: " + pFile.getName());
-				lPost = new Post(readYamlHeader(pFile, lNext));
+				Map<String, Object> yamlHeader = readYamlHeader(pFile, lNext);
+				String lDescription = (String) yamlHeader.get(SpikeCst.DESCRIPTION);
+				yamlHeader.put(SpikeCst.DESCRIPTION, convertDescription(lDescription));
+				lPost = new Post(yamlHeader);
 				i += 1;
 				continue;
 			}
@@ -468,6 +471,13 @@ public class Spike {
 			lPost.setContent(lContent);
 		}
 		return lPost;
+	}
+
+	private static String convertDescription(final String aDescription) {
+		if (aDescription != null && aDescription.trim().length() != 0) {
+			return mdProcessor.markdown(aDescription);
+		}
+		return null;
 	}
 
 	public final void initServer() {
